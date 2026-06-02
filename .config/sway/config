@@ -1,0 +1,283 @@
+
+# --- Variables ---
+set $mod Mod4
+
+set $pass_manager keepassxc
+set $term foot
+set $file_manager Thunar
+set $file_menu /home/nanda-kumudhan/.config/rofi/files
+set $network_menu /home/nanda-kumudhan/.config/rofi/network
+set $bluetooth_menu /home/nanda-kumudhan/.config/rofi/bluetooth
+set $clipboard_menu /home/nanda-kumudhan/.config/rofi/clipboard
+set $power_menu /home/nanda-kumudhan/.config/rofi/power
+
+# App launchers
+set $launcher /home/nanda-kumudhan/.config/rofi/launcher
+set $lock /home/nanda-kumudhan/.config/sway/scripts/lock
+set $clipboard_watch /home/nanda-kumudhan/.config/sway/scripts/clipboard-watch
+set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
+set $wallpaper /home/nanda-kumudhan/.config/wallpapers/arch-cyber-abstract-monochrome.png
+
+# --- Workspaces ---
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+
+workspace $ws1 output HDMI-1
+workspace $ws2 output HDMI-1
+workspace $ws3 output HDMI-1
+workspace $ws4 output HDMI-1
+workspace $ws5 output eDP-1
+
+# --- Theme ---
+set $m_bg #0d1117
+set $m_active #30363d
+set $m_inactive #30363d
+set $m_urgent #f0f6fc
+set $m_text #c9d1d9
+
+font pango:JetBrainsMono Nerd Font 10
+default_border pixel 1
+default_floating_border pixel 1
+titlebar_border_thickness 0
+titlebar_padding 4 0
+gaps inner 6
+gaps outer 6
+smart_gaps off
+smart_borders on
+hide_edge_borders smart
+
+# Apply gap changes to already-open workspaces on reload.
+exec_always swaymsg -q gaps inner all set 6
+exec_always swaymsg -q gaps outer all set 6
+
+client.focused $m_active #161b22 $m_text $m_active $m_active
+client.focused_inactive #161b22 #161b22 #8b949e #161b22 #161b22
+client.unfocused $m_bg $m_bg #6e7681 $m_bg $m_bg
+client.urgent #8b949e #21262d $m_text #8b949e #8b949e
+
+# --- Startup ---
+
+# Removable media
+exec udiskie --no-tray --notify
+
+# --- Session Services ---
+exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+
+# XDG desktop portal, if installed. Common package paths differ by distro.
+exec sh -c 'for p in xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr /usr/libexec/xdg-desktop-portal-wlr; do if command -v "$p" >/dev/null 2>&1 || [ -x "$p" ]; then exec "$p"; fi; done; exit 0'
+
+# Export the Wayland session to DBus/systemd.
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
+exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
+
+# Keep a stable SSH_AUTH_SOCK for KeePassXC.
+exec sh -c 'export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"; test -S "$SSH_AUTH_SOCK" || ssh-agent -a "$SSH_AUTH_SOCK"; dbus-update-activation-environment --systemd SSH_AUTH_SOCK; systemctl --user import-environment SSH_AUTH_SOCK'
+
+# KeePassXC integration
+exec env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
+
+# Notifications
+exec_always sh -c 'command -v mako >/dev/null || exit 0; pkill -x mako 2>/dev/null; mako'
+
+# Automatic split direction
+exec_always sh -c 'pkill -x autotiling 2>/dev/null; exec /usr/sbin/autotiling'
+
+# Wallpaper
+output * bg $wallpaper fill
+
+# Output profiles; no-op until kanshi is installed.
+exec_always sh -c 'command -v kanshi >/dev/null 2>&1 || exit 0; pkill -x kanshi 2>/dev/null; exec kanshi'
+
+# Clipboard history; no-op until cliphist and wl-clipboard are installed.
+exec_always $clipboard_watch
+
+# --- Input ---
+input * xkb_layout gb
+
+input "type:touchpad" {
+    natural_scroll enabled
+    dwt enabled
+    middle_emulation enabled
+}
+
+input "type:pointer" {
+	natural_scroll enabled
+}
+
+focus_follows_mouse no
+
+# --- Idle & Power ---
+# Lock and power management
+exec swayidle -w \
+    timeout 180 "$lock" \
+    timeout 300 'swaymsg "output * power off"' \
+    resume 'swaymsg "output * power on"' \
+    before-sleep "$lock"
+
+# --- Keybinds ---
+
+# Launchers
+
+bindsym Ctrl+Mod1+t exec $term
+bindsym $mod+e exec $file_menu
+bindsym $mod+Shift+e exec $file_manager
+bindsym $mod+space exec $launcher
+bindsym $mod+y exec $clipboard_menu
+bindsym $mod+q kill
+bindsym $mod+l exec $lock
+bindsym Ctrl+Escape exec $term -T "sysmon" -e htop
+bindsym Print exec $screenshot full
+bindsym Shift+Print exec $screenshot region
+
+# Window management
+bindsym $mod+h splith
+bindsym $mod+v splitv
+bindsym $mod+r layout toggle split
+bindsym $mod+f fullscreen toggle
+bindsym $mod+d floating toggle
+bindsym $mod+Shift+d sticky toggle
+bindsym $mod+p exec wdisplays
+bindsym $mod+c move position center
+bindsym $mod+t layout tabbed
+bindsym $mod+Shift+r reload
+bindsym $mod+s layout stacking
+
+bindsym $mod+plus resize grow width 40 px
+bindsym $mod+minus resize shrink width 40 px
+
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+bindsym $mod+a focus parent
+bindsym $mod+Shift+a focus child
+
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Workspaces
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9  
+
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+
+bindsym $mod+Ctrl+Right move workspace to output right
+bindsym $mod+Ctrl+Left move workspace to output left
+
+bindsym $mod+Tab workspace next
+bindsym $mod+Shift+Tab workspace prev
+bindsym Mod1+Tab focus next
+bindsym Mod1+Shift+Tab focus prev
+
+# Session actions
+bindsym $mod+Shift+s exec swaynag -t warning -m 'Do you want to sleep?' -b 'Yes' 'systemctl suspend'
+
+# App shortcuts
+bindsym $mod+b exec $bluetooth_menu
+bindsym $mod+Shift+b exec blueman-manager
+bindsym $mod+k exec keepassxc --minimized
+bindsym $mod+n exec $network_menu
+bindsym $mod+Shift+n exec foot --app-id=nmtui -T nmtui -e nmtui
+
+# Scratchpad: hide/show any focused window
+bindsym $mod+Shift+grave move scratchpad
+bindsym $mod+grave scratchpad show
+
+# --- Function Keys ---
+
+# Audio
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym $mod+XF86AudioMicMute exec /home/nanda-kumudhan/.config/rofi/pipewire-input
+bindsym $mod+XF86AudioMute exec /home/nanda-kumudhan/.config/rofi/pipewire-output
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-
+bindsym XF86AudioRaiseVolume exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+"
+bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+
+# System / media
+bindsym XF86Tools exec pavucontrol
+bindsym XF86Display exec wdisplays
+bindsym XF86AudioPrev exec playerctl previous
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym F11 exec notify-send "Shortcuts" "$(cat ~/.keybinds_help)"
+bindsym XF86MonBrightnessDown exec "brightnessctl s 3%- -n 0.3l%"
+bindsym XF86MonBrightnessUp exec "brightnessctl set +3%"
+bindsym XF86AudioStop exec playerctl stop
+
+# Power / lid
+bindsym Ctrl+Alt+Delete exec $power_menu
+bindswitch --reload --locked lid:on output eDP-1 disable
+bindswitch --reload --locked lid:off output eDP-1 enable
+
+# --- Window Rules ---
+
+# Keep fullscreen apps from idling the session
+for_window [class="mpv"] inhibit_idle fullscreen
+for_window [app_id="brave-browser"] inhibit_idle fullscreen
+for_window [app_id="brave-origin-nightly"] inhibit_idle fullscreen
+for_window [class="Brave-browser"] inhibit_idle fullscreen
+for_window [class="Brave-origin-nightly"] inhibit_idle fullscreen
+for_window [app_id="com.brave.Browser"] inhibit_idle fullscreen
+for_window [app_id="brave-music.youtube.com__-Default"] inhibit_idle fullscreen
+for_window [app_id="brave-cinhimbnkkaeohfgghhklpknlkffjgod-Default"] inhibit_idle fullscreen
+for_window [app_id="brave-origin-nightly-cinhimbnkkaeohfgghhklpknlkffjgod-Default"] inhibit_idle fullscreen
+for_window [app_id="librewolf"] inhibit_idle fullscreen
+for_window [class="LibreWolf"] inhibit_idle fullscreen
+
+# Keep YouTube Music on the laptop panel workspace.
+assign [app_id="brave-music.youtube.com__-Default"] $ws5
+assign [app_id="brave-cinhimbnkkaeohfgghhklpknlkffjgod-Default"] $ws5
+assign [app_id="brave-origin-nightly-cinhimbnkkaeohfgghhklpknlkffjgod-Default"] $ws5
+assign [class="brave-music.youtube.com__-Default"] $ws5
+assign [class="YouTube Music"] $ws5
+assign [class="youtube music"] $ws5
+assign [app_id="music.youtube.com"] $ws5
+assign [title=".*YouTube Music.*"] $ws5
+
+# Floating dialogs and utilities
+for_window [app_id="org.keepassxc.KeePassXC"] floating enable, move position center
+for_window [class="KeePassXC"] floating enable, move position center
+for_window [app_id="blueman-manager"] floating enable, move position center
+for_window [app_id="Thunar"] floating enable, move position center
+for_window [app_id="gnome-disks"] floating enable, move position center
+for_window [app_id="wdisplays"] floating enable, move position center
+for_window [app_id="nmtui"] floating enable, move position center
+for_window [app_id="org.gnome.DiskUtility"] floating enable, move position center
+for_window [app_id="mpv"] floating enable, move position center
+for_window [app_id="foot" title="sysmon"] floating enable, move position center
+for_window [app_id="scratchpad_term"] floating enable, resize set 80% 70%, move position center
+for_window [app_id="nm_panel"] floating enable, resize set 600 400, move position center
+for_window [class="pavucontrol"] floating enable, resize set 640 420, move position center
+for_window [app_id="pavucontrol"] floating enable, resize set 640 420, move position center
+
+# --- Outputs ---
+output eDP-1 position 0,0 scale 1.0
+output HDMI-1 position 1920,0
+
+bar {
+    position top
+    swaybar_command waybar
+}

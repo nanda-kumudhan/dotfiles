@@ -1,0 +1,20 @@
+#!/bin/sh
+
+export XDG_DATA_HOME="$HOME/.config/rofi"
+export XDG_DATA_DIRS="$HOME/.local/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+
+exec rofi \
+    -show drun \
+    -show-icons \
+    -matching fuzzy \
+    -sorting-method fzf \
+    -sort \
+    -drun-use-desktop-cache \
+    -drun-reload-desktop-cache \
+    -drun-match-fields "name,generic,keywords,categories,comment,exec" \
+    -drun-exclude-categories "Settings;DesktopSettings;HardwareSettings;X-XFCE;X-XFCE-SettingsDialog;X-XFCE-PersonalSettings;X-GNOME-Settings-Panel;X-GNOME-Utilities;ConsoleOnly;Maps" \
+    -drun-display-format "{name}" \
+    -application-fallback-icon application-x-executable \
+    -terminal foot \
+    -display-drun "Apps" \
+    -prompt "Launch"

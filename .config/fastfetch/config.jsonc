@@ -1,0 +1,175 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "source": "arch",
+        "color": {
+            "1": "white",
+            "2": "white"
+        },
+        "padding": {
+            "top": 1,
+            "right": 3
+        }
+    },
+    "display": {
+        "separator": "  󰇙  ",
+        "key": {
+            "width": 15
+        },
+        "bar": {
+            "char": {
+                "elapsed": "█",
+                "total": "░"
+            },
+            "width": 18
+        }
+    },
+    "modules": [
+        "break",
+        {
+            "type": "custom",
+            "format": "{#8}╭─ {#15}terminal rice{#8} ─────────────────╮"
+        },
+        {
+            "type": "title",
+            "key": "  󰣇 user",
+            "keyColor": "white"
+        },
+        {
+            "type": "os",
+            "key": "  󰣇 distro",
+            "keyColor": "white"
+        },
+        {
+            "type": "kernel",
+            "key": "   kernel",
+            "format": "{release}",
+            "keyColor": "white"
+        },
+        {
+            "type": "packages",
+            "key": "  󰏗 pkgs",
+            "combined": true,
+            "keyColor": "white"
+        },
+        {
+            "type": "uptime",
+            "key": "  󰅐 up",
+            "keyColor": "white"
+        },
+        {
+            "type": "custom",
+            "format": "{#8}├─ {#15}desktop stack{#8} ──────────────────╯"
+        },
+        {
+            "type": "wm",
+            "key": "   wm",
+            "keyColor": "white"
+        },
+        {
+            "type": "wmtheme",
+            "key": "  󰉼 wm theme",
+            "keyColor": "white"
+        },
+        {
+            "type": "theme",
+            "key": "  󰔎 gtk",
+            "keyColor": "white"
+        },
+        {
+            "type": "icons",
+            "key": "  󰀻 icons",
+            "keyColor": "white"
+        },
+        {
+            "type": "cursor",
+            "key": "   cursor",
+            "keyColor": "white"
+        },
+        {
+            "type": "wallpaper",
+            "key": "  󰸉 wall",
+            "keyColor": "white"
+        },
+        {
+            "type": "custom",
+            "format": "{#8}├─ {#15}terminal{#8} ───────────────────────╮"
+        },
+        {
+            "type": "terminal",
+            "key": "   term",
+            "keyColor": "white"
+        },
+        {
+            "type": "terminalfont",
+            "key": "   font",
+            "format": "{/name}{-}{/}{name}{?size} {size}{?}",
+            "keyColor": "white"
+        },
+        {
+            "type": "shell",
+            "key": "   shell",
+            "keyColor": "white"
+        },
+        {
+            "type": "terminaltheme",
+            "key": "  󰔎 palette",
+            "keyColor": "white"
+        },
+        {
+            "type": "custom",
+            "format": "{#8}├─ {#15}hardware{#8} ───────────────────────╯"
+        },
+        {
+            "type": "host",
+            "key": "  󰌢 host",
+            "keyColor": "white"
+        },
+        {
+            "type": "cpu",
+            "key": "  󰻠 cpu",
+            "format": "{name}",
+            "keyColor": "white"
+        },
+        {
+            "type": "gpu",
+            "key": "  󰍛 gpu",
+            "format": "{name}",
+            "keyColor": "white"
+        },
+        {
+            "type": "display",
+            "key": "  󰍹 display",
+            "compactType": "original-with-refresh-rate",
+            "keyColor": "white"
+        },
+        {
+            "type": "memory",
+            "key": "  󰾆 ram",
+            "format": "{used} / {total}",
+            "keyColor": "white"
+        },
+        {
+            "type": "disk",
+            "key": "   disk",
+            "folders": "/",
+            "format": "{size-used} / {size-total}",
+            "keyColor": "white"
+        },
+        {
+            "type": "battery",
+            "key": "  󰁹 battery",
+            "keyColor": "white"
+        },
+        {
+            "type": "wifi",
+            "key": "  󰤨 wifi",
+            "keyColor": "white"
+        },
+        {
+            "type": "custom",
+            "format": "{#8}╰─ {#15}system{#8} ─────────────────────────╯"
+        },
+        "break"
+    ]
+}

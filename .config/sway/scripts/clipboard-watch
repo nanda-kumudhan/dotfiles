@@ -1,0 +1,31 @@
+#!/bin/sh
+
+command -v wl-paste >/dev/null 2>&1 || exit 0
+command -v cliphist >/dev/null 2>&1 || exit 0
+
+runtime=${XDG_RUNTIME_DIR:-/tmp}
+pidfile="$runtime/cliphist-watch.pid"
+
+if [ -r "$pidfile" ]; then
+    pid=$(cat "$pidfile" 2>/dev/null || true)
+    case "$pid" in
+        ''|*[!0-9]*)
+            ;;
+        *)
+            kill -0 "$pid" 2>/dev/null && exit 0
+            ;;
+    esac
+fi
+
+(
+    wl-paste --type text --watch cliphist store &
+    text_pid=$!
+
+    wl-paste --type image --watch cliphist store &
+    image_pid=$!
+
+    trap 'kill "$text_pid" "$image_pid" 2>/dev/null' INT TERM EXIT
+    wait
+) &
+
+printf '%s\n' "$!" > "$pidfile"

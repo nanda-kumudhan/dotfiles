@@ -1,0 +1,114 @@
+@define-color foreground #eeeeee;
+@define-color foreground-inactive #aaaaaa;
+@define-color foreground-muted #666666;
+@define-color background #000000;
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    font-size: 15px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+#waybar {
+    color: @foreground;
+    background-color: @background;
+}
+
+#workspaces {
+    padding-left: 0.35em;
+}
+
+#workspaces button {
+    color: @foreground;
+    background: @background;
+    padding: 0 0.45em;
+    min-height: 0;
+}
+
+#workspaces button.empty,
+#workspaces button.persistent {
+    color: @foreground-inactive;
+}
+
+#workspaces button.focused,
+#workspaces button.active {
+    color: @foreground;
+    font-weight: bold;
+}
+
+#workspaces button.urgent {
+    color: @foreground;
+    font-weight: bold;
+}
+
+#scratchpad,
+#clock,
+#mpris,
+#custom-pomodoro,
+#network,
+#bluetooth,
+#wireplumber,
+#wireplumber.source,
+#backlight,
+#battery,
+#idle_inhibitor,
+#privacy,
+#tray {
+    color: @foreground;
+    background: @background;
+    padding: 0 0.55em;
+    min-height: 0;
+}
+
+#clock,
+#custom-pomodoro {
+    font-weight: bold;
+}
+
+#mpris,
+#scratchpad,
+#privacy,
+#idle_inhibitor,
+#tray {
+    color: @foreground-inactive;
+}
+
+#mpris.paused,
+#custom-pomodoro.idle,
+#custom-pomodoro.paused,
+#wireplumber.muted,
+#wireplumber.source.muted,
+#network.disconnected,
+#bluetooth.disabled {
+    color: @foreground-muted;
+}
+
+#custom-pomodoro.work,
+#custom-pomodoro.break,
+#idle_inhibitor.activated,
+#battery.warning,
+#battery.critical:not(.charging) {
+    color: @foreground;
+    font-weight: bold;
+}
+
+#mpris.stopped {
+    padding: 0;
+}
+
+tooltip {
+    color: @foreground;
+    background: @background;
+    border: 1px solid @foreground-muted;
+    border-radius: 0;
+}
+
+tooltip label {
+    color: @foreground;
+    padding: 0.45em;
+}

@@ -1,0 +1,111 @@
+* {
+    bg:              #000000;
+    bg-alt:          #050505;
+    bg-selected:     #111111;
+    bg-hover:        #0a0a0a;
+    fg:              #e6e6e6;
+    fg-muted:        #9a9a9a;
+    fg-subtle:       #666666;
+    border:          #2a2a2a;
+    border-strong:   #4a4a4a;
+    accent:          #d0d0d0;
+    urgent:          #b8b8b8;
+
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    width:            38%;
+    border:           1px;
+    border-color:     @border;
+    border-radius:    6px;
+    background-color: @bg;
+    padding:          12px;
+}
+
+mainbox {
+    spacing: 10px;
+}
+
+inputbar {
+    children:         [ "prompt", "entry" ];
+    spacing:          10px;
+    padding:          9px 11px;
+    background-color: @bg-alt;
+    border:           1px;
+    border-color:     @border;
+    border-radius:    5px;
+}
+
+prompt {
+    text-color: @accent;
+    font:       "JetBrainsMono Nerd Font 12 Bold";
+}
+
+entry {
+    text-color:        @fg;
+    placeholder:       "Search";
+    placeholder-color: @fg-subtle;
+}
+
+listview {
+    lines:        12;
+    columns:      1;
+    fixed-height: true;
+    spacing:      4px;
+    scrollbar:    false;
+    padding:      1px;
+}
+
+element {
+    padding: 8px 10px;
+    spacing: 10px;
+    border:  1px;
+    border-color: transparent;
+    border-radius: 5px;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @fg-muted;
+}
+
+element selected.normal,
+element selected.active {
+    background-color: @bg-selected;
+    border-color:     @border-strong;
+    text-color:       @fg;
+}
+
+element normal.urgent,
+element alternate.urgent,
+element selected.urgent {
+    background-color: @bg-selected;
+    border-color:     @urgent;
+    text-color:       @fg;
+}
+
+element-icon {
+    size:       1.15em;
+    text-color: inherit;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color:     inherit;
+}
+
+message {
+    border:           1px;
+    border-color:     @border;
+    border-radius:    5px;
+    padding:          8px 10px;
+    background-color: @bg-alt;
+}
+
+textbox {
+    text-color: @fg;
+}

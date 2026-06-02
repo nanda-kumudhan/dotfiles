@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+set -u
+
+ROFI_CMD="${ROFI_CMD:-rofi -dmenu -i -p Bluetooth}"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "Bluetooth" "$1"
+}
+
+need_cmd() {
+    command -v "$1" >/dev/null 2>&1 || {
+        printf 'Missing dependency: %s\n' "$1" >&2
+        exit 1
+    }
+}
+
+bt() {
+    bluetoothctl "$@" 2>/dev/null
+}
+
+device_name() {
+    local mac="$1"
+
+    bt info "$mac" | awk -F': ' '
+        /^\s*Name:/ {print $2; found=1; exit}
+        /^\s*Alias:/ && !found {alias=$2}
+        END { if (!found && alias != "") print alias }
+    '
+}
+
+device_state() {
+    local mac="$1"
+    bt info "$mac" | awk -F': ' '
+        /^\s*Connected:/ {connected=$2}
+        /^\s*Paired:/ {paired=$2}
+        END {
+            if (connected == "yes") { print "connected"; exit }
+            if (paired == "yes") { print "paired"; exit }
+            print "available"
+        }
+    '
+}
+
+device_rows() {
+    local mac name state marker rank
+
+    bt devices |
+        awk '/^Device ([[:xdigit:]]{2}:){5}[[:xdigit:]]{2} / {
+            mac=$2
+            $1=""
+            $2=""
+            sub(/^  */, "")
+            print mac "\t" $0
+        }' |
+        while IFS=$'\t' read -r mac name; do
+            [ -n "$mac" ] || continue
+            [ -n "$name" ] || name="$mac"
+
+            state=$(device_state "$mac")
+            case "$state" in
+                connected) marker="●"; rank=0 ;;
+                paired) marker="◐"; rank=1 ;;
+                *) marker="○"; rank=2 ;;
+            esac
+
+            printf '%d\t%s  %-32.32s\t%s\n' "$rank" "$marker" "$name" "$mac"
+        done |
+        sort -t $'\t' -k1,1n -k2,2f |
+        cut -f2-
+}
+
+toggle_device() {
+    local choice mac state name
+
+    choice=$1
+    mac=$(printf '%s' "$choice" | grep -Eo '([[:xdigit:]]{2}:){5}[[:xdigit:]]{2}' | head -n1)
+    [ -n "$mac" ] || exit 0
+
+    state=$(device_state "$mac")
+    name=$(device_name "$mac")
+    [ -n "$name" ] || name="$mac"
+
+    if [ "$state" = "connected" ]; then
+        if bt disconnect "$mac" >/dev/null 2>&1; then
+            notify "Disconnected: $name"
+        else
+            notify "Failed to disconnect: $name"
+            exit 1
+        fi
+        exit 0
+    fi
+
+    if bt connect "$mac" >/dev/null 2>&1; then
+        notify "Connected: $name"
+    else
+        notify "Failed to connect: $name"
+        exit 1
+    fi
+}
+
+main() {
+    need_cmd bluetoothctl
+    need_cmd rofi
+
+    rows=$(device_rows)
+    [ -n "$rows" ] || exit 0
+
+    choice=$(printf '%s\n' "$rows" | eval "$ROFI_CMD" -format s)
+    [ -n "$choice" ] || exit 0
+
+    toggle_device "$choice"
+}
+
+main "$@"

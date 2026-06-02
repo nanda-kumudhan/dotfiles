@@ -1,0 +1,75 @@
+#!/bin/sh
+
+ROFI=${ROFI:-rofi}
+CLEAR_LABEL="Clear clipboard history"
+
+MENU_THEME='
+window { width: 42%; }
+listview { lines: 12; }
+entry { placeholder: "Search clipboard"; }
+element { padding: 9px 12px; }
+'
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "Clipboard" "$1 is not installed"
+        exit 1
+    fi
+}
+
+require rofi
+require cliphist
+require wl-copy
+
+confirm_clear() {
+    answer=$(
+        printf '%s\n%s\n' "No" "Yes, clear clipboard" |
+            "$ROFI" \
+                -dmenu \
+                -i \
+                -no-custom \
+                -sync \
+                -p "Clear clipboard?" \
+                -theme-str '
+                    window { width: 28%; }
+                    listview { lines: 2; }
+                    entry { placeholder: ""; }
+                    element { padding: 10px 12px; }
+                '
+    )
+
+    [ "$answer" = "Yes, clear clipboard" ]
+}
+
+choice=$(
+    {
+        printf '%s\n' "$CLEAR_LABEL"
+        cliphist list
+    } |
+        "$ROFI" \
+            -dmenu \
+            -i \
+            -no-custom \
+            -matching fuzzy \
+            -sync \
+            -p "Clipboard" \
+            -mesg "Enter copies selected history item" \
+            -theme-str "$MENU_THEME"
+)
+
+[ -n "$choice" ] || exit 0
+
+if [ "$choice" = "$CLEAR_LABEL" ]; then
+    confirm_clear || exit 0
+    cliphist wipe
+    wl-copy --clear
+    notify "Clipboard" "Cleared clipboard history"
+    exit 0
+fi
+
+printf '%s' "$choice" | cliphist decode | wl-copy
+notify "Clipboard" "Copied selected item"

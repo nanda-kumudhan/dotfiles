@@ -1,0 +1,272 @@
+#!/bin/sh
+
+ROFI=${ROFI:-rofi}
+TAB=$(printf '\t')
+
+MENU_THEME='
+window { width: 42%; }
+listview { lines: 12; }
+entry { placeholder: "Search files"; }
+element { padding: 9px 12px; }
+'
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "Files" "$1 is not installed"
+        exit 1
+    fi
+}
+
+clean_dir() {
+    if [ -d "$1" ]; then
+        realpath "$1" 2>/dev/null && return
+    fi
+
+    printf '%s\n' "$HOME"
+}
+
+short_path() {
+    case "$1" in
+        "$HOME") printf '~' ;;
+        "$HOME"/*) printf '~/%s' "${1#"$HOME"/}" ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
+parent_dir() {
+    dirname "$1"
+}
+
+is_home_quick_place() {
+    case "$1" in
+        Desktop|Documents|Downloads|Github|Nextcloud|Pictures|Projects|Videos|.config) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+row() {
+    label=$1
+    action=$2
+    path=$3
+
+    printf '%s\t%s\t%s\n' "$label" "$action" "$path"
+}
+
+quick_place() {
+    icon=$1
+    name=$2
+    path=$3
+
+    [ -d "$path" ] || return
+    row "$icon  $name" "cd" "$path"
+}
+
+quick_rows() {
+    [ "$dir" = "$HOME" ] || return
+
+    quick_place "󰉍" "Downloads" "$HOME/Downloads"
+    quick_place "󰈙" "Documents" "$HOME/Documents"
+    quick_place "󰉏" "Projects" "$HOME/Projects"
+    quick_place "󰊤" "Github" "$HOME/Github"
+    quick_place "󰉏" "Config" "$HOME/.config"
+    quick_place "󰉏" "Pictures" "$HOME/Pictures"
+    quick_place "󰕧" "Videos" "$HOME/Videos"
+}
+
+action_rows() {
+    if [ "$dir" != "/" ]; then
+        row "󰁍  Parent" "cd" "$(parent_dir "$dir")"
+    fi
+}
+
+entry_icon() {
+    path=$1
+
+    if [ -d "$path" ]; then
+        printf '󰉋'
+    elif [ -x "$path" ]; then
+        printf '󰡱'
+    else
+        case "$path" in
+            *.jpg|*.jpeg|*.png|*.webp|*.gif|*.bmp|*.svg) printf '󰋩' ;;
+            *.mp4|*.mkv|*.webm|*.mov|*.avi) printf '󰕧' ;;
+            *.mp3|*.flac|*.ogg|*.wav|*.m4a) printf '󰎈' ;;
+            *.pdf) printf '󰈦' ;;
+            *.zip|*.tar|*.gz|*.xz|*.7z|*.rar) printf '󰗄' ;;
+            *.sh|*.py|*.js|*.ts|*.rs|*.go|*.c|*.cpp|*.java|*.kt) printf '󰅩' ;;
+            *) printf '󰈔' ;;
+        esac
+    fi
+}
+
+entry_rows() {
+    find "$dir" -mindepth 1 -maxdepth 1 2>/dev/null |
+        while IFS= read -r path; do
+            name=${path##*/}
+
+            if [ "$show_hidden" != "1" ]; then
+                case "$name" in
+                    .*) continue ;;
+                esac
+            fi
+
+            if [ "$dir" = "$HOME" ] && is_home_quick_place "$name"; then
+                continue
+            fi
+
+            if [ -d "$path" ]; then
+                type_rank=0
+                action="cd"
+                suffix="/"
+            else
+                type_rank=1
+                action="open"
+                suffix=""
+            fi
+
+            label=$(printf '%s  %s%s' "$(entry_icon "$path")" "$name" "$suffix")
+            printf '%s\t%s\t%s\t%s\n' "$type_rank" "$label" "$action" "$path"
+        done |
+        sort -t "$TAB" -k1,1n -k2,2f |
+        cut -f2-
+}
+
+menu() {
+    message="$(short_path "$dir") - Enter open/navigate - Ctrl+O open default - Ctrl+T terminal - Alt+H dotfiles"
+
+    if command -v wl-copy >/dev/null 2>&1; then
+        message="$message - Ctrl+Y copy path"
+    fi
+
+    "$ROFI" \
+        -dmenu \
+        -i \
+        -no-custom \
+        -matching fuzzy \
+        -sync \
+        -p "Files" \
+        -mesg "$message" \
+        -display-columns 1 \
+        -display-column-separator "$TAB" \
+        -format i \
+        -kb-custom-1 "Control+o" \
+        -kb-custom-2 "Control+t" \
+        -kb-custom-3 "Control+y" \
+        -kb-custom-4 "Alt+h" \
+        -selected-row 0 \
+        -theme-str "$MENU_THEME"
+}
+
+target_dir() {
+    path=$1
+
+    if [ -d "$path" ]; then
+        printf '%s\n' "$path"
+    else
+        dirname "$path"
+    fi
+}
+
+open_path() {
+    path=$1
+    [ -n "$path" ] || exit 0
+
+    if [ -d "$path" ]; then
+        exec "$0" "$path" "$show_hidden"
+    fi
+
+    xdg-open "$path" >/dev/null 2>&1 &
+}
+
+open_terminal() {
+    path=$1
+    [ -n "$path" ] || path=$dir
+
+    foot --working-directory="$(target_dir "$path")" >/dev/null 2>&1 &
+}
+
+copy_path() {
+    path=$1
+    [ -n "$path" ] || path=$dir
+
+    if ! command -v wl-copy >/dev/null 2>&1; then
+        notify "Files" "wl-copy is not installed"
+        exit 1
+    fi
+
+    printf '%s' "$path" | wl-copy
+    notify "Files" "Copied $(short_path "$path")"
+}
+
+require rofi
+require xdg-open
+require foot
+require realpath
+
+dir=$(clean_dir "${1:-$HOME}")
+show_hidden=${2:-0}
+
+choices=$(
+    {
+        action_rows
+        quick_rows
+        entry_rows
+    }
+)
+
+choice_index=$(printf '%s\n' "$choices" | menu)
+status=$?
+
+case "$choice_index" in
+    ''|*[!0-9]*)
+        choice=""
+        ;;
+    *)
+        choice=$(printf '%s\n' "$choices" | awk -v row="$choice_index" 'NR == row + 1 {print; exit}')
+        ;;
+esac
+
+case "$status" in
+    1)
+        exit 0
+        ;;
+    10)
+        path=$(printf '%s' "$choice" | cut -f3)
+        [ -n "$path" ] || path=$dir
+        xdg-open "$path" >/dev/null 2>&1 &
+        exit 0
+        ;;
+    11)
+        path=$(printf '%s' "$choice" | cut -f3)
+        open_terminal "$path"
+        exit 0
+        ;;
+    12)
+        path=$(printf '%s' "$choice" | cut -f3)
+        copy_path "$path"
+        exit 0
+        ;;
+    13)
+        if [ "$show_hidden" = "1" ]; then
+            exec "$0" "$dir" "0"
+        else
+            exec "$0" "$dir" "1"
+        fi
+        ;;
+esac
+
+action=$(printf '%s' "$choice" | cut -f2)
+path=$(printf '%s' "$choice" | cut -f3)
+
+case "$action" in
+    cd)
+        exec "$0" "$path" "$show_hidden"
+        ;;
+    open)
+        open_path "$path"
+        ;;
+esac

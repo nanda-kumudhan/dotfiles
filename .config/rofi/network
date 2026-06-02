@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+
+# rofi-network
+# Simple saved-network switcher.
+#
+# Click active connection   -> disconnect
+# Click inactive connection -> connect
+#
+# No scan. No nearby Wi-Fi. No submenus. No extra options.
+
+set -u
+
+ROFI_CMD="${ROFI_CMD:-rofi -dmenu -i -p Network}"
+
+ICON_CONNECTED="●"
+ICON_DISCONNECTED="○"
+ICON_WIFI="󰖩"
+ICON_ETH="󰈀"
+ICON_VPN="󰌆"
+ICON_OTHER="󰛳"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "Network" "$1"
+}
+
+need_cmd() {
+    command -v "$1" >/dev/null 2>&1 || {
+        printf 'Missing dependency: %s\n' "$1" >&2
+        exit 1
+    }
+}
+
+icon_for_type() {
+    case "$1" in
+        802-11-wireless) printf '%s' "$ICON_WIFI" ;;
+        802-3-ethernet)  printf '%s' "$ICON_ETH" ;;
+        vpn)             printf '%s' "$ICON_VPN" ;;
+        *)               printf '%s' "$ICON_OTHER" ;;
+    esac
+}
+
+build_menu() {
+    local active all
+
+    active="$(nmcli -t -f NAME,TYPE,DEVICE connection show --active 2>/dev/null)"
+    all="$(nmcli -t -f NAME,TYPE connection show 2>/dev/null)"
+
+    # Active connections first.
+    printf '%s\n' "$active" | awk -F: 'NF >= 2 {print $1 "\t" $2 "\t" $3}' |
+    while IFS=$'\t' read -r name type device; do
+        [ -n "$name" ] || continue
+        icon="$(icon_for_type "$type")"
+
+        if [ -n "$device" ]; then
+            printf 'disconnect\t%s\t%s %s %s    active on %s\n' \
+                "$name" "$ICON_CONNECTED" "$icon" "$name" "$device"
+        else
+            printf 'disconnect\t%s\t%s %s %s    active\n' \
+                "$name" "$ICON_CONNECTED" "$icon" "$name"
+        fi
+    done
+
+    # Inactive saved Wi-Fi.
+    printf '%s\n' "$all" | awk -F: -v active_list="$active" '
+        BEGIN {
+            split(active_list, lines, "\n")
+            for (i in lines) {
+                split(lines[i], f, ":")
+                active_names[f[1]] = 1
+            }
+        }
+
+        $2 == "802-11-wireless" && !active_names[$1] {
+            print $1 "\t" $2
+        }
+    ' |
+    while IFS=$'\t' read -r name type; do
+        [ -n "$name" ] || continue
+        icon="$(icon_for_type "$type")"
+
+        printf 'connect\t%s\t%s %s %s\n' \
+            "$name" "$ICON_DISCONNECTED" "$icon" "$name"
+    done
+
+    # Inactive saved VPNs.
+    printf '%s\n' "$all" | awk -F: -v active_list="$active" '
+        BEGIN {
+            split(active_list, lines, "\n")
+            for (i in lines) {
+                split(lines[i], f, ":")
+                active_names[f[1]] = 1
+            }
+        }
+
+        $2 == "vpn" && !active_names[$1] {
+            print $1 "\t" $2
+        }
+    ' |
+    while IFS=$'\t' read -r name type; do
+        [ -n "$name" ] || continue
+        icon="$(icon_for_type "$type")"
+
+        printf 'connect\t%s\t%s %s %s\n' \
+            "$name" "$ICON_DISCONNECTED" "$icon" "$name"
+    done
+
+    # Inactive ethernet / other saved profiles.
+    printf '%s\n' "$all" | awk -F: -v active_list="$active" '
+        BEGIN {
+            split(active_list, lines, "\n")
+            for (i in lines) {
+                split(lines[i], f, ":")
+                active_names[f[1]] = 1
+            }
+        }
+
+        $2 != "802-11-wireless" && $2 != "vpn" && !active_names[$1] {
+            print $1 "\t" $2
+        }
+    ' |
+    while IFS=$'\t' read -r name type; do
+        [ -n "$name" ] || continue
+        icon="$(icon_for_type "$type")"
+
+        printf 'connect\t%s\t%s %s %s\n' \
+            "$name" "$ICON_DISCONNECTED" "$icon" "$name"
+    done
+}
+
+main() {
+    need_cmd nmcli
+    need_cmd rofi
+
+    local selected action name
+
+    selected="$(
+        build_menu | eval "$ROFI_CMD" -format 's' -display-column 3
+    )"
+
+    [ -n "$selected" ] || exit 0
+
+    action="$(printf '%s\n' "$selected" | cut -f1)"
+    name="$(printf '%s\n' "$selected" | cut -f2)"
+
+    case "$action" in
+        connect)
+            if nmcli connection up "$name" >/dev/null 2>&1; then
+                notify "Connected: $name"
+            else
+                notify "Failed to connect: $name"
+            fi
+            ;;
+        disconnect)
+            if nmcli connection down "$name" >/dev/null 2>&1; then
+                notify "Disconnected: $name"
+            else
+                notify "Failed to disconnect: $name"
+            fi
+            ;;
+    esac
+}
+
+main "$@"

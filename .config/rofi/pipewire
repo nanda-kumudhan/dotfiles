@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+rofi_cmd="rofi -dmenu -i -p PipeWire"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "PipeWire" "$1"
+}
+
+choose() {
+    printf "%s\n" "$@" | $rofi_cmd
+}
+
+get_default_sink_name() {
+    wpctl status | awk '
+        /Sinks:/ { section=1; next }
+        /Sources:/ { section=0 }
+        section && /\*/ {
+            sub(/^.*\* *[0-9]+\.\s*/, "")
+            print
+            exit
+        }
+    '
+}
+
+get_default_source_name() {
+    wpctl status | awk '
+        /Sources:/ { section=1; next }
+        /Filters:/ { section=0 }
+        section && /\*/ {
+            sub(/^.*\* *[0-9]+\.\s*/, "")
+            print
+            exit
+        }
+    '
+}
+
+toggle_output_mute() {
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    notify "Toggled output mute"
+}
+
+toggle_mic_mute() {
+    wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+    notify "Toggled microphone mute"
+}
+
+switch_output() {
+    local choice id
+
+    choice="$(
+        wpctl status | awk '
+            /Sinks:/ { section=1; next }
+            /Sources:/ { section=0 }
+            section && /[0-9]+\./ {
+                line=$0
+                gsub(/^[[:space:]│├─*]+/, "", line)
+                print line
+            }
+        ' | rofi -dmenu -i -p "Output"
+    )"
+
+    [[ -z "${choice:-}" ]] && exit 0
+
+    id="$(awk '{print $1}' <<< "$choice" | tr -d '.')"
+    wpctl set-default "$id"
+    notify "Output switched to $choice"
+}
+
+switch_input() {
+    local choice id
+
+    choice="$(
+        wpctl status | awk '
+            /Sources:/ { section=1; next }
+            /Filters:/ { section=0 }
+            section && /[0-9]+\./ {
+                line=$0
+                gsub(/^[[:space:]│├─*]+/, "", line)
+                print line
+            }
+        ' | rofi -dmenu -i -p "Input"
+    )"
+
+    [[ -z "${choice:-}" ]] && exit 0
+
+    id="$(awk '{print $1}' <<< "$choice" | tr -d '.')"
+    wpctl set-default "$id"
+    notify "Input switched to $choice"
+}
+
+restart_pipewire() {
+    systemctl --user restart pipewire pipewire-pulse wireplumber
+    notify "Restarted PipeWire"
+}
+
+show_status() {
+    wpctl status | rofi -dmenu -i -p "wpctl status" >/dev/null
+}
+
+main() {
+    local sink source choice
+
+    sink="$(get_default_sink_name || echo "Unknown output")"
+    source="$(get_default_source_name || echo "Unknown input")"
+
+    choice="$(
+        choose \
+            "󰖁 Toggle output mute — $sink" \
+            "󰍭 Toggle microphone mute — $source" \
+            "󰓃 Switch output device" \
+            "󰍬 Switch input device" \
+            "󰑓 Restart PipeWire" \
+            "󰋋 Show PipeWire status"
+    )"
+
+    case "$choice" in
+        "󰖁 Toggle output mute"* )
+            toggle_output_mute
+            ;;
+        "󰍭 Toggle microphone mute"* )
+            toggle_mic_mute
+            ;;
+        "󰓃 Switch output device" )
+            switch_output
+            ;;
+        "󰍬 Switch input device" )
+            switch_input
+            ;;
+        "󰑓 Restart PipeWire" )
+            restart_pipewire
+            ;;
+        "󰋋 Show PipeWire status" )
+            show_status
+            ;;
+    esac
+}
+
+main "$@"

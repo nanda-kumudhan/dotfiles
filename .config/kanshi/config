@@ -1,0 +1,8 @@
+profile docked {
+    output eDP-1 enable position 0,0 scale 1.0
+    output HDMI-1 enable position 1920,0
+}
+
+profile laptop {
+    output eDP-1 enable position 0,0 scale 1.0
+}

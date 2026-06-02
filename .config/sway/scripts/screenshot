@@ -1,0 +1,46 @@
+#!/bin/sh
+
+mode=${1:-full}
+dir="$HOME/Pictures/Screenshots"
+file="$dir/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "Screenshot" "$1 is not installed"
+        exit 1
+    fi
+}
+
+save_full() {
+    grim "$file"
+}
+
+save_region() {
+    geometry=$(slurp) || exit 0
+    [ -n "$geometry" ] || exit 0
+
+    grim -g "$geometry" "$file"
+}
+
+require grim
+mkdir -p "$dir" || exit 1
+
+case "$mode" in
+    full)
+        save_full
+        ;;
+    region)
+        require slurp
+        save_region
+        ;;
+    *)
+        notify "Screenshot" "Unknown mode: $mode"
+        exit 1
+        ;;
+esac
+
+notify "Screenshot" "Saved ${file#$HOME/}"

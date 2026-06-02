@@ -1,0 +1,238 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 24,
+    "spacing": 0,
+
+    "modules-left": ["sway/workspaces", "sway/scratchpad"],
+    "modules-center": ["clock", "mpris", "custom/pomodoro"],
+    "modules-right": ["network", "bluetooth", "wireplumber", "wireplumber#source", "backlight", "battery", "idle_inhibitor", "privacy", "tray"],
+
+    "sway/workspaces": {
+        "format": "{name} {windows}",
+        "on-click": "activate",
+        "format-window-separator": " ",
+        "window-rewrite-default": "󰘔",
+        "window-rewrite": {
+            "class<librewolf>": "󰈹",
+            "class<LibreWolf>": "󰈹",
+            "class<foot>": "󰆍",
+            "class<scratchpad_term>": "󰆍",
+            "class<Thunar>": "󰉋",
+            "class<thunar>": "󰉋",
+            "class<org.keepassxc.KeePassXC>": "󰌾",
+            "class<KeePassXC>": "󰌾",
+            "class<keepassxc>": "󰌾",
+            "class<pavucontrol>": "󰕾",
+            "class<blueman-manager>": "󰂯",
+            "class<wdisplays>": "󰍹",
+            "class<code>": "󰨞",
+            "class<Code>": "󰨞",
+            "class<codium>": "󰨞",
+            "class<jetbrains-studio>": "󰚩",
+            "class<android-studio>": "󰚩",
+            "class<Android Studio>": "󰚩",
+            "class<org.remmina.Remmina>": "󰢹",
+            "class<remmina>": "󰢹",
+            "class<Remmina>": "󰢹",
+            "class<texmaker>": "󰙩",
+            "class<Texmaker>": "󰙩",
+            "class<libreoffice.*>": "󰏆",
+            "class<mpv>": "󰐹",
+            "class<brave-browser>": "󰖟",
+            "class<Brave-browser>": "󰖟",
+            "class<Brave Browser>": "󰖟",
+            "class<com.brave.Browser>": "󰖟",
+            "app_id<brave-cinhimbnkkaeohfgghhklpknlkffjgod-Default>": "󰝚",
+            "class<brave-music.youtube.com__-Default>": "󰝚",
+            "class<YouTube Music>": "󰝚",
+            "class<youtube music>": "󰝚",
+            "class<music.youtube.com>": "󰝚"
+        },
+        "sort-by-number": true,
+        "all-outputs": false,
+        "persistent-workspaces": {
+            "1": [],
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": []
+        }
+    },
+
+    "sway/scratchpad": {
+        "format": "{icon}{count}",
+        "show-empty": false,
+        "format-icons": ["", ""],
+        "tooltip": true,
+        "tooltip-format": "{app}: {title}"
+    },
+
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 24,
+        "icon-theme": "waybar-nerd-taskbar",
+        "tooltip-format": "{name}\n{title}",
+        "on-click": "minimize-raise",
+        "on-click-right": "activate",
+        "on-click-middle": "close",
+        "all-outputs": false,
+        "active-first": false,
+        "app_ids-mapping": {
+            "codium": "vscodium",
+            "Code": "vscodium",
+            "footclient": "foot",
+            "scratchpad_term": "foot"
+        }
+    },
+
+    "mpris": {
+        "format": "{status_icon} {dynamic}",
+        "format-paused": "{status_icon} {dynamic}",
+        "format-stopped": "",
+        "dynamic-order": ["artist", "title"],
+        "dynamic-importance-order": ["title", "artist"],
+        "dynamic-separator": " - ",
+        "dynamic-len": 26,
+        "artist-len": 12,
+        "title-len": 16,
+        "tooltip-format": "{player} ({status})\n{artist}\n{title}\n{album}",
+        "status-icons": {
+            "playing": "󰐊",
+            "paused": "󰏤",
+            "stopped": "󰓛"
+        }
+    },
+
+    "custom/pomodoro": {
+        "exec": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "tooltip": true,
+        "on-click": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro toggle",
+        "on-click-right": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro reset",
+        "on-click-middle": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro skip"
+    },
+
+    "tray": {
+        "icon-size": 14,
+        "spacing": 10,
+        "ignored-items": ["org/blueman/sni"]
+    },
+
+    "bluetooth": {
+        "format": "󰂯",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "format-connected-battery": "󰂱 {device_alias} {device_battery_percentage}%",
+        "max-length": 24,
+        "tooltip-format": "{controller_alias}\n{controller_address}\n{num_connections} connected",
+        "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\nBattery: {device_battery_percentage}%",
+        "on-click": "/home/nanda-kumudhan/.config/rofi/bluetooth",
+        "on-click-right": "/home/nanda-kumudhan/.config/rofi/bluetooth"
+    },
+
+    "network": {
+        "format-wifi": "{icon}",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "󰤭",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format-wifi": "SSID: {essid}\nSignal: {signalStrength}% ({signaldBm}dBm)\nFrequency: {frequency}GHz\nBSSID: {bssid}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
+        "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
+        "tooltip-format-disconnected": "Disconnected",
+        "interval": 15,
+        "on-click": "/home/nanda-kumudhan/.config/rofi/network",
+        "on-click-right": "/home/nanda-kumudhan/.config/rofi/network"
+    },
+
+    "battery": {
+        "bat": "BAT0",
+        "adapter": "ACAD",
+        "interval": 60,
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon}",
+        "format-charging": "󰂄 {icon}",
+        "format-plugged": "󰚥 {icon}",
+        "format-icons": ["󰁺 ▱▱▱▱▱▱▱▱", "󰁻 ▰▱▱▱▱▱▱▱", "󰁼 ▰▰▱▱▱▱▱▱", "󰁽 ▰▰▰▱▱▱▱▱", "󰁾 ▰▰▰▰▱▱▱▱", "󰁿 ▰▰▰▰▰▱▱▱", "󰂁 ▰▰▰▰▰▰▱▱", "󰁹 ▰▰▰▰▰▰▰▰"],
+        "tooltip-format": "Capacity: {capacity}%\nPower draw: {power}W\nTime remaining: {time}"
+    },
+
+    "backlight": {
+        "format": "{icon}",
+        "format-icons": ["󰃞 ▱▱▱▱▱▱▱▱", "󰃞 ▰▱▱▱▱▱▱▱", "󰃞 ▰▰▱▱▱▱▱▱", "󰃟 ▰▰▰▱▱▱▱▱", "󰃟 ▰▰▰▰▱▱▱▱", "󰃠 ▰▰▰▰▰▱▱▱", "󰃠 ▰▰▰▰▰▰▱▱", "󰃠 ▰▰▰▰▰▰▰▰"],
+        "scroll-step": 1,
+        "tooltip-format": "Brightness: {percent}%"
+    },
+
+    "wireplumber": {
+        "format": "{icon}",
+        "format-muted": "󰖁",
+        "format-icons": ["󰕿 ▱▱▱▱▱▱▱▱", "󰕿 ▰▱▱▱▱▱▱▱", "󰕿 ▰▰▱▱▱▱▱▱", "󰖀 ▰▰▰▱▱▱▱▱", "󰖀 ▰▰▰▰▱▱▱▱", "󰕾 ▰▰▰▰▰▱▱▱", "󰕾 ▰▰▰▰▰▰▱▱", "󰕾 ▰▰▰▰▰▰▰▰"],
+        "max-volume": 100,
+        "scroll-step": 1,
+        "tooltip-format": "Volume: {volume}%\nNode: {node_name}",
+        "on-click": "/home/nanda-kumudhan/.config/rofi/pipewire-output",
+        "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "pavucontrol"
+    },
+
+    "wireplumber#source": {
+        "node-type": "Audio/Source",
+        "format": "󰍬",
+        "format-muted": "󰍭",
+        "max-volume": 100,
+        "scroll-step": 1,
+        "tooltip-format": "Mic: {volume}%\nNode: {node_name}",
+        "on-click": "/home/nanda-kumudhan/.config/rofi/pipewire-input",
+        "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+        "on-click-right": "pavucontrol"
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "󰛊",
+            "deactivated": "󰛉"
+        },
+        "tooltip": true,
+        "tooltip-format-activated": "Idle inhibitor is on",
+        "tooltip-format-deactivated": "Idle inhibitor is off"
+    },
+
+    "privacy": {
+        "icon-spacing": 6,
+        "icon-size": 14,
+        "transition-duration": 0,
+        "modules": [
+            {
+                "type": "screenshare",
+                "tooltip": true,
+                "tooltip-icon-size": 18
+            },
+            {
+                "type": "audio-in",
+                "tooltip": true,
+                "tooltip-icon-size": 18
+            }
+        ],
+        "ignore-monitor": true
+    },
+
+    "clock": {
+        "format": "{:%H:%M  %a %d %b}",
+        "tooltip-format": "{:%A, %d %B %Y\n%H:%M:%S}\n\n{calendar}",
+        "calendar": {
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "today": "<span color='#e6e6e6'><b>{}</b></span>"
+            }
+        }
+    }
+}

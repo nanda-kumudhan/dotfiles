@@ -1,0 +1,20 @@
+.cache/
+Trash/
+*.log
+*.sqlite
+*.sqlite-*
+*.db
+*.mdb
+core.*
+
+# Private/generated application state that should not be published.
+.config/rofi/Google/
+.config/rofi/Trash/
+.config/rofi/zed/
+.config/rofi/nvim/
+.config/rofi/org.localsend.localsend_app/
+.config/rofi/zathura/
+.config/rofi/applications/
+.config/rofi/desktop-directories/
+.config/rofi/icons/
+

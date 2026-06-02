@@ -1,0 +1,98 @@
+#!/bin/sh
+
+ROFI=${ROFI:-rofi}
+TAB=$(printf '\t')
+LOCK="$HOME/.config/sway/scripts/lock"
+
+MENU_THEME='
+window { width: 28%; }
+listview { lines: 5; }
+entry { placeholder: "Search actions"; }
+element { padding: 10px 12px; }
+'
+
+CONFIRM_THEME='
+window { width: 24%; }
+listview { lines: 2; }
+entry { placeholder: ""; }
+element { padding: 10px 12px; }
+'
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "Power menu" "$1 is not installed"
+        exit 1
+    fi
+}
+
+menu() {
+    "$ROFI" \
+        -dmenu \
+        -i \
+        -matching fuzzy \
+        -sync \
+        -p "Power" \
+        -mesg "Session actions" \
+        -display-columns 1 \
+        -display-column-separator "$TAB" \
+        -selected-row 0 \
+        -theme-str "$MENU_THEME"
+}
+
+confirm() {
+    action=$1
+
+    choice=$(
+        {
+            printf '%s\t%s\n' "No" "cancel"
+            printf '%s\t%s\n' "Yes, $action" "yes"
+        } | "$ROFI" \
+            -dmenu \
+            -i \
+            -sync \
+            -p "$action?" \
+            -mesg "Confirm action" \
+            -display-columns 1 \
+            -display-column-separator "$TAB" \
+            -selected-row 0 \
+            -theme-str "$CONFIRM_THEME"
+    )
+
+    [ "$(printf '%s' "$choice" | cut -f2)" = "yes" ]
+}
+
+require rofi
+
+choice=$(
+    {
+        printf '%s\t%s\n' "󰒲  Sleep" "sleep"
+        printf '%s\t%s\n' "󰌾  Lock" "lock"
+        printf '%s\t%s\n' "󰗼  Log out" "logout"
+        printf '%s\t%s\n' "󰜉  Reboot" "reboot"
+        printf '%s\t%s\n' "󰐥  Shutdown" "shutdown"
+    } | menu
+)
+
+action=$(printf '%s' "$choice" | cut -f2)
+
+case "$action" in
+    lock)
+        exec "$LOCK"
+        ;;
+    sleep)
+        systemctl suspend
+        ;;
+    logout)
+        confirm "Log out" && swaymsg exit
+        ;;
+    reboot)
+        confirm "Reboot" && systemctl reboot
+        ;;
+    shutdown)
+        confirm "Shutdown" && systemctl poweroff
+        ;;
+esac
