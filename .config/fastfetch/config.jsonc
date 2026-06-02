@@ -3,8 +3,8 @@
     "logo": {
         "source": "arch",
         "color": {
-            "1": "white",
-            "2": "white"
+            "1": "cyan",
+            "2": "blue"
         },
         "padding": {
             "top": 1,
@@ -28,147 +28,147 @@
         "break",
         {
             "type": "custom",
-            "format": "{#8}╭─ {#15}terminal rice{#8} ─────────────────╮"
+            "format": "{#4}╭─ {#14}terminal rice{#4} ─────────────────╮"
         },
         {
             "type": "title",
             "key": "  󰣇 user",
-            "keyColor": "white"
+            "keyColor": "cyan"
         },
         {
             "type": "os",
             "key": "  󰣇 distro",
-            "keyColor": "white"
+            "keyColor": "blue"
         },
         {
             "type": "kernel",
             "key": "   kernel",
             "format": "{release}",
-            "keyColor": "white"
+            "keyColor": "green"
         },
         {
             "type": "packages",
             "key": "  󰏗 pkgs",
             "combined": true,
-            "keyColor": "white"
+            "keyColor": "purple"
         },
         {
             "type": "uptime",
             "key": "  󰅐 up",
-            "keyColor": "white"
+            "keyColor": "yellow"
         },
         {
             "type": "custom",
-            "format": "{#8}├─ {#15}desktop stack{#8} ──────────────────╯"
+            "format": "{#6}├─ {#15}desktop stack{#6} ──────────────────╯"
         },
         {
             "type": "wm",
             "key": "   wm",
-            "keyColor": "white"
+            "keyColor": "blue"
         },
         {
             "type": "wmtheme",
             "key": "  󰉼 wm theme",
-            "keyColor": "white"
+            "keyColor": "purple"
         },
         {
             "type": "theme",
             "key": "  󰔎 gtk",
-            "keyColor": "white"
+            "keyColor": "cyan"
         },
         {
             "type": "icons",
             "key": "  󰀻 icons",
-            "keyColor": "white"
+            "keyColor": "yellow"
         },
         {
             "type": "cursor",
             "key": "   cursor",
-            "keyColor": "white"
+            "keyColor": "green"
         },
         {
             "type": "wallpaper",
             "key": "  󰸉 wall",
-            "keyColor": "white"
+            "keyColor": "orange"
         },
         {
             "type": "custom",
-            "format": "{#8}├─ {#15}terminal{#8} ───────────────────────╮"
+            "format": "{#5}├─ {#15}terminal{#5} ───────────────────────╮"
         },
         {
             "type": "terminal",
             "key": "   term",
-            "keyColor": "white"
+            "keyColor": "cyan"
         },
         {
             "type": "terminalfont",
             "key": "   font",
             "format": "{/name}{-}{/}{name}{?size} {size}{?}",
-            "keyColor": "white"
+            "keyColor": "yellow"
         },
         {
             "type": "shell",
             "key": "   shell",
-            "keyColor": "white"
+            "keyColor": "green"
         },
         {
             "type": "terminaltheme",
             "key": "  󰔎 palette",
-            "keyColor": "white"
+            "keyColor": "purple"
         },
         {
             "type": "custom",
-            "format": "{#8}├─ {#15}hardware{#8} ───────────────────────╯"
+            "format": "{#3}├─ {#15}hardware{#3} ───────────────────────╯"
         },
         {
             "type": "host",
             "key": "  󰌢 host",
-            "keyColor": "white"
+            "keyColor": "red"
         },
         {
             "type": "cpu",
             "key": "  󰻠 cpu",
             "format": "{name}",
-            "keyColor": "white"
+            "keyColor": "yellow"
         },
         {
             "type": "gpu",
             "key": "  󰍛 gpu",
             "format": "{name}",
-            "keyColor": "white"
+            "keyColor": "purple"
         },
         {
             "type": "display",
             "key": "  󰍹 display",
             "compactType": "original-with-refresh-rate",
-            "keyColor": "white"
+            "keyColor": "cyan"
         },
         {
             "type": "memory",
             "key": "  󰾆 ram",
             "format": "{used} / {total}",
-            "keyColor": "white"
+            "keyColor": "green"
         },
         {
             "type": "disk",
             "key": "   disk",
             "folders": "/",
             "format": "{size-used} / {size-total}",
-            "keyColor": "white"
+            "keyColor": "orange"
         },
         {
             "type": "battery",
             "key": "  󰁹 battery",
-            "keyColor": "white"
+            "keyColor": "yellow"
         },
         {
             "type": "wifi",
             "key": "  󰤨 wifi",
-            "keyColor": "white"
+            "keyColor": "blue"
         },
         {
             "type": "custom",
-            "format": "{#8}╰─ {#15}system{#8} ─────────────────────────╯"
+            "format": "{#4}╰─ {#15}system{#4} ─────────────────────────╯"
         },
         "break"
     ]
