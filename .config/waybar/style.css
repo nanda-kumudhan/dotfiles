@@ -75,11 +75,6 @@
     color: @foreground-inactive;
 }
 
-#mpris,
-#custom-pomodoro {
-    min-width: 13em;
-}
-
 #mpris {
     padding-left: 0;
 }
