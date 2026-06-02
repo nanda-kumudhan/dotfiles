@@ -4,8 +4,9 @@
 @define-color background #000000;
 
 * {
-    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
     font-size: 15px;
+    font-weight: 400;
     padding: 0;
     margin: 0;
     border: none;
@@ -20,13 +21,14 @@
 }
 
 #workspaces {
-    padding-left: 0.35em;
+    padding-left: 0.45em;
 }
 
 #workspaces button {
     color: @foreground;
     background: @background;
-    padding: 0 0.45em;
+    padding: 0 0.6em;
+    margin: 0 0.08em;
     min-height: 0;
 }
 
@@ -38,12 +40,12 @@
 #workspaces button.focused,
 #workspaces button.active {
     color: @foreground;
-    font-weight: bold;
+    background: #1a1a1a;
 }
 
 #workspaces button.urgent {
     color: @foreground;
-    font-weight: bold;
+    background: #333333;
 }
 
 #scratchpad,
@@ -53,7 +55,7 @@
 #network,
 #bluetooth,
 #wireplumber,
-#wireplumber.source,
+#custom-mic-muted,
 #backlight,
 #battery,
 #idle_inhibitor,
@@ -65,11 +67,6 @@
     min-height: 0;
 }
 
-#clock,
-#custom-pomodoro {
-    font-weight: bold;
-}
-
 #mpris,
 #scratchpad,
 #privacy,
@@ -78,11 +75,23 @@
     color: @foreground-inactive;
 }
 
+#mpris,
+#custom-pomodoro {
+    min-width: 13em;
+}
+
+#mpris {
+    padding-left: 0;
+}
+
+#custom-pomodoro {
+    padding-right: 0;
+}
+
 #mpris.paused,
 #custom-pomodoro.idle,
 #custom-pomodoro.paused,
 #wireplumber.muted,
-#wireplumber.source.muted,
 #network.disconnected,
 #bluetooth.disabled {
     color: @foreground-muted;
@@ -94,11 +103,10 @@
 #battery.warning,
 #battery.critical:not(.charging) {
     color: @foreground;
-    font-weight: bold;
 }
 
 #mpris.stopped {
-    padding: 0;
+    padding-left: 0;
 }
 
 tooltip {

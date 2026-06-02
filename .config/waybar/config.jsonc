@@ -5,8 +5,8 @@
     "spacing": 0,
 
     "modules-left": ["sway/workspaces", "sway/scratchpad"],
-    "modules-center": ["clock", "mpris", "custom/pomodoro"],
-    "modules-right": ["network", "bluetooth", "wireplumber", "wireplumber#source", "backlight", "battery", "idle_inhibitor", "privacy", "tray"],
+    "modules-center": ["mpris", "clock", "custom/pomodoro"],
+    "modules-right": ["network", "bluetooth", "custom/mic-muted", "wireplumber", "backlight", "battery", "idle_inhibitor", "privacy", "tray"],
 
     "sway/workspaces": {
         "format": "{name} {windows}",
@@ -118,15 +118,14 @@
     "tray": {
         "icon-size": 14,
         "spacing": 10,
-        "ignored-items": ["org/blueman/sni"]
+        "ignored-items": ["org/blueman/sni", "blueman", "blueman-tray", "Blueman"]
     },
 
     "bluetooth": {
         "format": "󰂯",
         "format-disabled": "󰂲",
-        "format-connected": "󰂱 {device_alias}",
-        "format-connected-battery": "󰂱 {device_alias} {device_battery_percentage}%",
-        "max-length": 24,
+        "format-connected": "󰂱",
+        "format-connected-battery": "󰂱",
         "tooltip-format": "{controller_alias}\n{controller_address}\n{num_connections} connected",
         "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
@@ -156,24 +155,24 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "{icon}",
-        "format-charging": "󰂄 {icon}",
-        "format-plugged": "󰚥 {icon}",
-        "format-icons": ["󰁺 ▱▱▱▱▱▱▱▱", "󰁻 ▰▱▱▱▱▱▱▱", "󰁼 ▰▰▱▱▱▱▱▱", "󰁽 ▰▰▰▱▱▱▱▱", "󰁾 ▰▰▰▰▱▱▱▱", "󰁿 ▰▰▰▰▰▱▱▱", "󰂁 ▰▰▰▰▰▰▱▱", "󰁹 ▰▰▰▰▰▰▰▰"],
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂁", "󰁹"],
         "tooltip-format": "Capacity: {capacity}%\nPower draw: {power}W\nTime remaining: {time}"
     },
 
     "backlight": {
-        "format": "{icon}",
-        "format-icons": ["󰃞 ▱▱▱▱▱▱▱▱", "󰃞 ▰▱▱▱▱▱▱▱", "󰃞 ▰▰▱▱▱▱▱▱", "󰃟 ▰▰▰▱▱▱▱▱", "󰃟 ▰▰▰▰▱▱▱▱", "󰃠 ▰▰▰▰▰▱▱▱", "󰃠 ▰▰▰▰▰▰▱▱", "󰃠 ▰▰▰▰▰▰▰▰"],
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
         "scroll-step": 1,
         "tooltip-format": "Brightness: {percent}%"
     },
 
     "wireplumber": {
-        "format": "{icon}",
-        "format-muted": "󰖁",
-        "format-icons": ["󰕿 ▱▱▱▱▱▱▱▱", "󰕿 ▰▱▱▱▱▱▱▱", "󰕿 ▰▰▱▱▱▱▱▱", "󰖀 ▰▰▰▱▱▱▱▱", "󰖀 ▰▰▰▰▱▱▱▱", "󰕾 ▰▰▰▰▰▱▱▱", "󰕾 ▰▰▰▰▰▰▱▱", "󰕾 ▰▰▰▰▰▰▰▰"],
+        "format": "{icon} {volume}%",
+        "format-muted": "󰖁 {volume}%",
+        "format-icons": ["󰕿", "󰖀", "󰕾"],
         "max-volume": 100,
         "scroll-step": 1,
         "tooltip-format": "Volume: {volume}%\nNode: {node_name}",
@@ -182,13 +181,12 @@
         "on-click-right": "pavucontrol"
     },
 
-    "wireplumber#source": {
-        "node-type": "Audio/Source",
-        "format": "󰍬",
-        "format-muted": "󰍭",
-        "max-volume": 100,
-        "scroll-step": 1,
-        "tooltip-format": "Mic: {volume}%\nNode: {node_name}",
+    "custom/mic-muted": {
+        "exec": "wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED && printf '󰍭' || true",
+        "format": "{}",
+        "interval": 2,
+        "tooltip": true,
+        "tooltip-format": "Microphone muted",
         "on-click": "/home/nanda-kumudhan/.config/rofi/pipewire-input",
         "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
         "on-click-right": "pavucontrol"
@@ -225,13 +223,13 @@
     },
 
     "clock": {
-        "format": "{:%H:%M  %a %d %b}",
+        "format": "{:%H:%M}",
         "tooltip-format": "{:%A, %d %B %Y\n%H:%M:%S}\n\n{calendar}",
         "calendar": {
             "mode": "month",
             "on-scroll": 1,
             "format": {
-                "today": "<span color='#e6e6e6'><b>{}</b></span>"
+                "today": "<span color='#e6e6e6'>{}</span>"
             }
         }
     }
