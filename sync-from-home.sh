@@ -22,7 +22,15 @@ files=(
     .config/environment.d/qt.conf
     .config/fastfetch/config.jsonc
     .config/foot/foot.ini
+    .config/greetd/config.toml
+    .config/greetd/pam.d-greetd
+    .config/Kvantum/kvantum.kvconfig
+    .config/Kvantum/Gruvbox-Black/Gruvbox-Black.kvconfig
+    .config/Kvantum/Gruvbox-Black/Gruvbox-Black.svg
+    .config/gtk-3.0/gtk.css
     .config/gtk-3.0/settings.ini
+    .config/gtk-4.0/gtk.css
+    .config/gtk-4.0/gtk-dark.css
     .config/gtk-4.0/settings.ini
     .config/htop/htoprc
     .config/kanshi/config
@@ -45,8 +53,10 @@ files=(
     .config/sway/config
     .config/sway/scripts/battery-notify
     .config/sway/scripts/clipboard-watch
+    .config/sway/scripts/gui-env
     .config/sway/scripts/lock
     .config/sway/scripts/screenshot
+    .config/sway/scripts/session-env
     .config/wallpapers/arch-cyber-abstract-monochrome.png
     .config/wallpapers/arch-thinkpad-cyber-monochrome.png
     .config/waybar/config.jsonc

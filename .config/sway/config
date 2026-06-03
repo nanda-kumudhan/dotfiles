@@ -16,7 +16,10 @@ set $launcher /home/nanda-kumudhan/.config/rofi/launcher
 set $lock /home/nanda-kumudhan/.config/sway/scripts/lock
 set $clipboard_watch /home/nanda-kumudhan/.config/sway/scripts/clipboard-watch
 set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
+set $gui_env /home/nanda-kumudhan/.config/sway/scripts/gui-env
 set $wallpaper /home/nanda-kumudhan/Pictures/wallpaper
+set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
+set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=Adwaita:dark GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=default XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -68,20 +71,21 @@ client.urgent #8b949e #21262d $m_text #8b949e #8b949e
 exec udiskie --no-tray --notify
 
 # --- Session Services ---
-exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec $gui_env /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 
 # XDG desktop portal, if installed. Common package paths differ by distro.
 exec sh -c 'for p in xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr /usr/libexec/xdg-desktop-portal-wlr; do if command -v "$p" >/dev/null 2>&1 || [ -x "$p" ]; then exec "$p"; fi; done; exit 0'
 
 # Export the Wayland session to DBus/systemd.
-exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
-exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY $theme_assign
+exec systemctl --user import-environment WAYLAND_DISPLAY
+exec systemctl --user set-environment $theme_assign
 
 # Keep a stable SSH_AUTH_SOCK for KeePassXC.
 exec sh -c 'export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"; test -S "$SSH_AUTH_SOCK" || ssh-agent -a "$SSH_AUTH_SOCK"; dbus-update-activation-environment --systemd SSH_AUTH_SOCK; systemctl --user import-environment SSH_AUTH_SOCK'
 
 # KeePassXC integration
-exec env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
+exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
 
 # Notifications
 exec_always sh -c 'command -v mako >/dev/null || exit 0; pkill -x mako 2>/dev/null; mako'
@@ -127,7 +131,7 @@ exec swayidle -w \
 
 bindsym Ctrl+Mod1+t exec $term
 bindsym $mod+e exec $file_menu
-bindsym $mod+Shift+e exec $file_manager
+bindsym $mod+Shift+e exec $gui_env $file_manager
 bindsym $mod+space exec $launcher
 bindsym $mod+y exec $clipboard_menu
 bindsym $mod+q kill
@@ -143,7 +147,7 @@ bindsym $mod+r layout toggle split
 bindsym $mod+f fullscreen toggle
 bindsym $mod+d floating toggle
 bindsym $mod+Shift+d sticky toggle
-bindsym $mod+p exec wdisplays
+bindsym $mod+p exec $gui_env wdisplays
 bindsym $mod+c move position center
 bindsym $mod+t layout tabbed
 bindsym $mod+Shift+r reload
@@ -198,8 +202,8 @@ bindsym $mod+Shift+s exec swaynag -t warning -m 'Do you want to sleep?' -b 'Yes'
 
 # App shortcuts
 bindsym $mod+b exec $bluetooth_menu
-bindsym $mod+Shift+b exec blueman-manager
-bindsym $mod+k exec keepassxc --minimized
+bindsym $mod+Shift+b exec $gui_env blueman-manager
+bindsym $mod+k exec $gui_env keepassxc --minimized
 bindsym $mod+n exec $network_menu
 bindsym $mod+Shift+n exec foot --app-id=nmtui -T nmtui -e nmtui
 
@@ -218,7 +222,7 @@ bindsym XF86AudioRaiseVolume exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+"
 bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
 
 # System / media
-bindsym XF86Tools exec pavucontrol
+bindsym XF86Tools exec $gui_env pavucontrol
 bindsym XF86Display exec wdisplays
 bindsym XF86AudioPrev exec playerctl previous
 bindsym XF86AudioPlay exec playerctl play-pause

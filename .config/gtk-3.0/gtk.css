@@ -1,0 +1,95 @@
+@define-color theme_bg_color #000000;
+@define-color theme_base_color #050505;
+@define-color theme_fg_color #eeeeee;
+@define-color theme_text_color #eeeeee;
+@define-color theme_selected_bg_color #333333;
+@define-color theme_selected_fg_color #ffffff;
+@define-color theme_border_color #4a4a4a;
+
+* {
+    transition: none;
+    animation: none;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+window,
+dialog,
+popover,
+menu,
+.background {
+    background-color: #000000;
+    color: #eeeeee;
+}
+
+headerbar,
+toolbar,
+menubar,
+notebook > header,
+treeview,
+list,
+textview,
+entry {
+    background-color: #050505;
+    color: #eeeeee;
+    border: 1px solid #2a2a2a;
+    box-shadow: none;
+}
+
+button,
+combobox,
+spinbutton,
+scale,
+scrollbar {
+    background-color: #111111;
+    color: #eeeeee;
+    border: 1px solid #333333;
+    box-shadow: none;
+}
+
+selection,
+*:selected {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+menu,
+popover,
+.context-menu {
+    background-color: #050505;
+    color: #eeeeee;
+    border: 1px solid #4a4a4a;
+    padding: 3px;
+}
+
+menu menuitem,
+menuitem,
+popover modelbutton,
+popover button,
+popover row {
+    background-color: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    color: #eeeeee;
+}
+
+menu menuitem:hover,
+menuitem:hover,
+menuitem:prelight,
+menuitem:selected,
+popover modelbutton:hover,
+popover modelbutton:selected,
+popover button:hover,
+popover button:selected,
+popover row:hover,
+popover row:selected {
+    background-color: #333333;
+    background-image: none;
+    border-color: #4a4a4a;
+    color: #ffffff;
+}
+
+menu separator,
+separator {
+    background-color: #333333;
+}

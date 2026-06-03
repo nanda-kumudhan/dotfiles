@@ -20,7 +20,7 @@ window {
     width:            38%;
     border:           1px;
     border-color:     @border;
-    border-radius:    6px;
+    border-radius:    0px;
     background-color: @bg;
     padding:          12px;
 }
@@ -36,7 +36,7 @@ inputbar {
     background-color: @bg-alt;
     border:           1px;
     border-color:     @border;
-    border-radius:    5px;
+    border-radius:    0px;
 }
 
 prompt {
@@ -64,7 +64,7 @@ element {
     spacing: 10px;
     border:  1px;
     border-color: transparent;
-    border-radius: 5px;
+    border-radius: 0px;
 }
 
 element normal.normal,
@@ -101,7 +101,7 @@ element-text {
 message {
     border:           1px;
     border-color:     @border;
-    border-radius:    5px;
+    border-radius:    0px;
     padding:          8px 10px;
     background-color: @bg-alt;
 }

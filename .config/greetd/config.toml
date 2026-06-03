@@ -1,0 +1,9 @@
+[terminal]
+# Keep greetd on the first virtual terminal, like a traditional display manager.
+vt = 1
+
+[default_session]
+# Monochrome tuigreet, styled after the rofi mono theme.
+# F1 opens command selection, F2 session selection, F3 power menu.
+command = "tuigreet --time --time-format '%H:%M  %a %d %b' --greeting 'Sway' --greet-align left --remember --remember-session --asterisks --width 44 --window-padding 6 --container-padding 2 --prompt-padding 1 --sessions /usr/share/wayland-sessions --cmd sway --power-shutdown 'systemctl poweroff' --power-reboot 'systemctl reboot' --kb-command 1 --kb-sessions 2 --kb-power 3 --theme 'border=darkgray;text=gray;prompt=white;time=gray;action=darkgray;button=white;container=black;input=white;title=white;greet=white'"
+user = "greeter"
