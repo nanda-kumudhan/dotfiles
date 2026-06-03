@@ -329,7 +329,7 @@ deploy_file() {
     dest="$HOME/$rel"
 
     case "$rel" in
-        .git/*|.git|.gitignore|README|README.*|install.sh)
+        .git/*|.git|.gitignore|README|README.*|install.sh|sync-from-home.sh)
             return 0
             ;;
     esac
@@ -377,6 +377,7 @@ deploy_dotfiles() {
             ! -name 'README' \
             ! -name 'README.*' \
             ! -name 'install.sh' \
+            ! -name 'sync-from-home.sh' \
             ! -name '.gitignore' \
             -print0
     )
