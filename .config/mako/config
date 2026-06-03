@@ -1,15 +1,15 @@
-font=JetBrainsMono Nerd Font 10
-background-color=#0d1117
-text-color=#c9d1d9
-border-color=#30363d
-progress-color=over #6e7681
+font=JetBrains Mono 10
+background-color=#000000
+text-color=#eeeeee
+border-color=#666666
+progress-color=over #1a1a1a
 
 width=360
 height=96
 margin=8
-padding=10
+padding=8
 border-size=1
-border-radius=3
+border-radius=0
 
 anchor=top-right
 default-timeout=6000
@@ -21,12 +21,15 @@ markup=1
 actions=1
 
 [urgency=low]
-border-color=#30363d
+text-color=#aaaaaa
+border-color=#666666
 default-timeout=3000
 
 [urgency=normal]
-border-color=#30363d
+border-color=#666666
 
 [urgency=high]
-border-color=#8b949e
+background-color=#1a1a1a
+text-color=#eeeeee
+border-color=#eeeeee
 default-timeout=0

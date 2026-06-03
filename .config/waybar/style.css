@@ -27,14 +27,22 @@
 #workspaces button {
     color: @foreground;
     background: @background;
-    padding: 0 0.6em;
-    margin: 0 0.08em;
+    padding: 0 0.45em;
+    margin: 0;
+    min-width: 2.1em;
     min-height: 0;
+    transition: none;
+}
+
+#workspaces button label {
+    min-width: 2.1em;
+    transition: none;
 }
 
 #workspaces button.empty,
 #workspaces button.persistent {
     color: @foreground-inactive;
+    background: @background;
 }
 
 #workspaces button.focused,

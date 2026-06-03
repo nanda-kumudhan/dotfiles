@@ -1,52 +1,53 @@
 "$schema" = "https://starship.rs/config-schema.json"
 
 add_newline = true
-command_timeout = 750
+command_timeout = 900
 scan_timeout = 30
-palette = "terminal"
+palette = "workbench"
 
-format = "$directory$git_branch$git_status$package$bun$nodejs$deno$python$php$ruby$rust$golang$java$dotnet$c$cpp$cmake$docker_context$status$fill$cmd_duration$jobs$time\n$character"
+format = "$fill$time\n$directory$git_branch$git_status$package$bun$nodejs$deno$python$php$ruby$rust$golang$java$dotnet$c$cpp$cmake$docker_context$status$cmd_duration$jobs\n$character"
 
-[palettes.terminal]
-base = "#0b1020"
-surface = "#111827"
-surface_bright = "#1f2937"
-muted = "#94a3b8"
-text = "#e5e7eb"
-accent = "#60a5fa"
-red = "#f87171"
-yellow = "#fbbf24"
-green = "#34d399"
-purple = "#c084fc"
-cyan = "#22d3ee"
-orange = "#fb923c"
+[palettes.workbench]
+base = "#000000"
+surface = "#111111"
+surface_bright = "#333333"
+muted = "#aaaaaa"
+text = "#eeeeee"
+red = "#d76f7b"
+green = "#8fbf7f"
+yellow = "#c9a45f"
+blue = "#7aa2e3"
+purple = "#b58bdc"
+cyan = "#6fb7c8"
+orange = "#d19a66"
 
 [fill]
-symbol = "─"
+symbol = "·"
 style = "fg:surface_bright"
 
 [directory]
-format = "[ $path]($style)[$read_only]($read_only_style) "
-style = "fg:accent bold"
+format = "[  $path]($style)[$read_only]($read_only_style)  "
+style = "fg:blue"
 truncation_length = 3
 truncate_to_repo = true
 home_symbol = "~"
-read_only = " "
-read_only_style = "fg:orange bold"
+read_only = "  "
+read_only_style = "fg:orange"
 
 [git_branch]
 symbol = ""
-format = "[ $symbol $branch ](fg:purple)"
+format = "[$symbol  $branch]($style)  "
+style = "fg:purple"
 truncation_length = 24
-truncation_symbol = "…"
+truncation_symbol = "..."
 
 [git_status]
-format = "([$all_status$ahead_behind]($style) )"
+format = "[$all_status$ahead_behind]($style)  "
 style = "fg:yellow"
 conflicted = "="
-ahead = "⇡"
-behind = "⇣"
-diverged = "⇕"
+ahead = "↑"
+behind = "↓"
+diverged = "↕"
 up_to_date = ""
 untracked = "?"
 stashed = "$"
@@ -57,88 +58,107 @@ deleted = "-"
 
 [package]
 symbol = "󰏗"
-format = "[ $symbol $version ](fg:purple)"
+format = "[$symbol  $version]($style)  "
+style = "fg:purple"
 
 [bun]
 symbol = ""
-format = "[ $symbol $version ](fg:yellow)"
+format = "[$symbol  $version]($style)  "
+style = "fg:yellow"
 
 [nodejs]
 symbol = ""
-format = "[ $symbol $version ](fg:green)"
+format = "[$symbol  $version]($style)  "
+style = "fg:green"
 
 [deno]
 symbol = ""
-format = "[ $symbol $version ](fg:green)"
+format = "[$symbol  $version]($style)  "
+style = "fg:green"
 
 [python]
 symbol = ""
-format = "[ $symbol ${version}(\\($virtualenv\\)) ](fg:yellow)"
+format = "[$symbol  ${version}(\\($virtualenv\\))]($style)  "
+style = "fg:yellow"
 
 [php]
 symbol = ""
-format = "[ $symbol $version ](fg:purple)"
+format = "[$symbol  $version]($style)  "
+style = "fg:purple"
 
 [ruby]
 symbol = ""
-format = "[ $symbol $version ](fg:red)"
+format = "[$symbol  $version]($style)  "
+style = "fg:red"
 
 [rust]
 symbol = ""
-format = "[ $symbol $version ](fg:orange)"
+format = "[$symbol  $version]($style)  "
+style = "fg:orange"
 
 [golang]
 symbol = ""
-format = "[ $symbol $version ](fg:cyan)"
+format = "[$symbol  $version]($style)  "
+style = "fg:cyan"
 
 [java]
 symbol = ""
-format = "[ $symbol $version ](fg:red)"
+format = "[$symbol  $version]($style)  "
+style = "fg:red"
 
 [dotnet]
 symbol = ""
-format = "[ $symbol $version ](fg:purple)"
+format = "[$symbol  $version]($style)  "
+style = "fg:purple"
 
 [c]
 symbol = ""
-format = "[ $symbol $version ](fg:cyan)"
+format = "[$symbol  $version]($style)  "
+style = "fg:cyan"
 
 [cpp]
 symbol = ""
-format = "[ $symbol $version ](fg:cyan)"
+format = "[$symbol  $version]($style)  "
+style = "fg:cyan"
 disabled = false
 
 [cmake]
 symbol = ""
-format = "[ $symbol $version ](fg:accent)"
+format = "[$symbol  $version]($style)  "
+style = "fg:blue"
 
 [docker_context]
 symbol = ""
-format = "[ $symbol $context ](fg:cyan)"
+format = "[$symbol  $context]($style)  "
+style = "fg:cyan"
 
 [status]
 disabled = false
-symbol = "!"
-format = "[ $symbol $status ](fg:orange)"
+symbol = ""
+format = "[$symbol  $status]($style)  "
+style = "fg:red"
 
 [cmd_duration]
 min_time = 500
-format = "[ $duration ](fg:muted)"
+format = "[󰔟  $duration]($style)  "
+style = "fg:muted"
 show_milliseconds = false
 
 [jobs]
-symbol = "✦"
-format = "[ $symbol$number ](fg:purple bold)"
+symbol = ""
+format = "[$symbol  $number]($style)  "
+style = "fg:purple"
 
 [time]
 disabled = false
 time_format = "%H:%M"
-format = "[ $time ](fg:muted)"
+format = "[   $time ]($style)"
+style = "fg:muted"
 
 [character]
-success_symbol = "[❯](fg:green bold)"
-error_symbol = "[❯](fg:orange bold)"
-vimcmd_symbol = "[❮](fg:accent bold)"
-vimcmd_replace_one_symbol = "[❮](fg:purple bold)"
-vimcmd_replace_symbol = "[❮](fg:purple bold)"
-vimcmd_visual_symbol = "[❮](fg:yellow bold)"
+success_symbol = "[](fg:green) "
+error_symbol = "[](fg:red) "
+vimcmd_symbol = "[](fg:blue) "
+vimcmd_replace_one_symbol = "[](fg:purple) "
+vimcmd_replace_symbol = "[](fg:purple) "
+vimcmd_visual_symbol = "[](fg:yellow) "

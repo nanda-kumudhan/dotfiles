@@ -1,11 +1,16 @@
 #!/bin/sh
 
 config="${XDG_CONFIG_HOME:-$HOME/.config}/sway/config"
+fallback_wallpaper="$HOME/Pictures/wallpaper"
 wallpaper=$(
     sed -n 's/^set[[:space:]]\+\$wallpaper[[:space:]]\+//p' "$config" 2>/dev/null |
         sed "s/^[\"']//; s/[\"']$//" |
         head -n 1
 )
+
+if [ ! -f "$wallpaper" ]; then
+    wallpaper="$fallback_wallpaper"
+fi
 
 set -- -f -c 0d1117
 

@@ -1,0 +1,7 @@
+[user]
+	name = Nanda Kumudhan
+	email = nandak97@protonmail.ch
+[url "git@github.com:"]
+	insteadOf = https://github.com
+[credential]
+	helper = /usr/lib/git-core/git-credential-libsecret

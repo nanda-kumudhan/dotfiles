@@ -16,7 +16,7 @@ set $launcher /home/nanda-kumudhan/.config/rofi/launcher
 set $lock /home/nanda-kumudhan/.config/sway/scripts/lock
 set $clipboard_watch /home/nanda-kumudhan/.config/sway/scripts/clipboard-watch
 set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
-set $wallpaper /home/nanda-kumudhan/.config/wallpapers/arch-cyber-abstract-monochrome.png
+set $wallpaper /home/nanda-kumudhan/Pictures/wallpaper
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -47,15 +47,15 @@ default_border pixel 1
 default_floating_border pixel 1
 titlebar_border_thickness 0
 titlebar_padding 4 0
-gaps inner 6
-gaps outer 6
+gaps inner 3
+gaps outer 2
 smart_gaps off
 smart_borders on
 hide_edge_borders smart
 
 # Apply gap changes to already-open workspaces on reload.
-exec_always swaymsg -q gaps inner all set 6
-exec_always swaymsg -q gaps outer all set 6
+exec_always swaymsg -q gaps inner all set 3
+exec_always swaymsg -q gaps outer all set 2
 
 client.focused $m_active #161b22 $m_text $m_active $m_active
 client.focused_inactive #161b22 #161b22 #8b949e #161b22 #161b22
