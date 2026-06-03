@@ -1,7 +1,7 @@
 export XDG_CURRENT_DESKTOP=sway
 export XDG_SESSION_TYPE=wayland
 
-export GTK_THEME=Adwaita:dark
+export GTK_THEME=gruvbox-dark-gtk
 export GTK_ICON_THEME=Papirus-Dark
 export GDK_BACKEND=wayland,x11
 

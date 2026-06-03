@@ -19,7 +19,7 @@ set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
 set $gui_env /home/nanda-kumudhan/.config/sway/scripts/gui-env
 set $wallpaper /home/nanda-kumudhan/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
-set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=Adwaita:dark GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=default XCURSOR_SIZE=24
+set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=default XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -39,11 +39,11 @@ workspace $ws4 output HDMI-1
 workspace $ws5 output eDP-1
 
 # --- Theme ---
-set $m_bg #0d1117
-set $m_active #30363d
-set $m_inactive #30363d
-set $m_urgent #f0f6fc
-set $m_text #c9d1d9
+set $m_bg #000000
+set $m_active #4a4a4a
+set $m_inactive #2a2a2a
+set $m_urgent #ffffff
+set $m_text #e6e6e6
 
 font pango:JetBrainsMono Nerd Font 10
 default_border pixel 1
@@ -60,10 +60,10 @@ hide_edge_borders smart
 exec_always swaymsg -q gaps inner all set 3
 exec_always swaymsg -q gaps outer all set 2
 
-client.focused $m_active #161b22 $m_text $m_active $m_active
-client.focused_inactive #161b22 #161b22 #8b949e #161b22 #161b22
-client.unfocused $m_bg $m_bg #6e7681 $m_bg $m_bg
-client.urgent #8b949e #21262d $m_text #8b949e #8b949e
+client.focused $m_active #000000 $m_text $m_active $m_active
+client.focused_inactive #2a2a2a #000000 #9a9a9a #2a2a2a #2a2a2a
+client.unfocused $m_bg $m_bg #666666 $m_bg $m_bg
+client.urgent #ffffff #111111 $m_text #ffffff #ffffff
 
 # --- Startup ---
 

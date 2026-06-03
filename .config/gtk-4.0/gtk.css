@@ -1,23 +1,38 @@
-@define-color window_bg_color #000000;
-@define-color view_bg_color #050505;
-@define-color headerbar_bg_color #050505;
-@define-color card_bg_color #080808;
-@define-color popover_bg_color #050505;
-@define-color dialog_bg_color #050505;
-@define-color sidebar_bg_color #050505;
-@define-color accent_bg_color #333333;
-@define-color accent_fg_color #ffffff;
-@define-color accent_color #d0d0d0;
-@define-color window_fg_color #eeeeee;
-@define-color view_fg_color #eeeeee;
-@define-color headerbar_fg_color #eeeeee;
-@define-color borders #4a4a4a;
+@define-color sway_bg #000000;
+@define-color sway_bg_alt #050505;
+@define-color sway_panel #000000;
+@define-color sway_hover #111111;
+@define-color sway_selected #333333;
+@define-color sway_border #2a2a2a;
+@define-color sway_border_strong #4a4a4a;
+@define-color sway_text #e6e6e6;
+@define-color sway_text_bright #ffffff;
+@define-color sway_muted #9a9a9a;
+@define-color sway_dim #666666;
+
+@define-color window_bg_color @sway_bg;
+@define-color view_bg_color @sway_bg_alt;
+@define-color headerbar_bg_color @sway_panel;
+@define-color card_bg_color @sway_bg_alt;
+@define-color popover_bg_color @sway_bg;
+@define-color dialog_bg_color @sway_bg;
+@define-color sidebar_bg_color @sway_bg;
+@define-color accent_bg_color @sway_selected;
+@define-color accent_fg_color @sway_text_bright;
+@define-color accent_color @sway_text;
+@define-color window_fg_color @sway_text;
+@define-color view_fg_color @sway_text;
+@define-color headerbar_fg_color @sway_text;
+@define-color borders @sway_border;
+@define-color outline_color @sway_text;
 
 * {
     transition: none;
     animation: none;
     box-shadow: none;
     text-shadow: none;
+    border-radius: 0;
+    outline-color: @sway_text;
 }
 
 window,
@@ -25,39 +40,139 @@ dialog,
 popover,
 menu,
 .background {
-    background-color: #000000;
-    color: #eeeeee;
+    background-color: @sway_bg;
+    color: @sway_text;
 }
 
 headerbar,
 toolbarview,
 toolbar,
-menubar,
-notebook > header,
-list,
-textview,
-entry {
-    background-color: #050505;
-    color: #eeeeee;
-    border: 1px solid #2a2a2a;
-    box-shadow: none;
+menubar {
+    background-color: @sway_panel;
+    background-image: none;
+    border: 0;
+    border-bottom: 1px solid @sway_border;
+    color: @sway_text;
+    min-height: 0;
+}
+
+headerbar button,
+toolbar button {
+    min-height: 22px;
+    min-width: 22px;
+    padding: 2px 6px;
 }
 
 button,
-combobox,
+combobox button,
 spinbutton,
-scale,
-scrollbar {
-    background-color: #111111;
-    color: #eeeeee;
-    border: 1px solid #333333;
-    box-shadow: none;
+switch,
+entry {
+    background-color: @sway_bg_alt;
+    background-image: none;
+    border: 1px solid @sway_border;
+    color: @sway_text;
+    min-height: 24px;
+}
+
+button {
+    padding: 4px 8px;
+}
+
+button:hover,
+button:focus,
+combobox button:hover,
+entry:focus,
+spinbutton:focus {
+    background-color: @sway_hover;
+    border-color: @sway_border_strong;
+    color: @sway_text_bright;
+}
+
+button:active,
+button:checked,
+switch:checked {
+    background-color: @sway_selected;
+    border-color: @sway_border_strong;
+    color: @sway_text_bright;
+}
+
+button:disabled,
+entry:disabled,
+label:disabled {
+    color: @sway_dim;
+}
+
+entry {
+    padding: 3px 7px;
+}
+
+list,
+listview,
+columnview,
+gridview,
+textview,
+textview text,
+.view {
+    background-color: @sway_bg_alt;
+    color: @sway_text;
+}
+
+row {
+    background-color: transparent;
+    color: @sway_text;
+}
+
+row:hover {
+    background-color: @sway_hover;
+    color: @sway_text_bright;
+}
+
+row:selected,
+list row:selected,
+listview row:selected,
+columnview row:selected,
+gridview child:selected {
+    background-color: @sway_selected;
+    color: @sway_text_bright;
+}
+
+navigation-sidebar,
+.navigation-sidebar,
+stacksidebar,
+stacksidebar row,
+.sidebar {
+    background-color: @sway_bg;
+    color: @sway_muted;
+}
+
+navigation-sidebar row,
+.navigation-sidebar row,
+stacksidebar row {
+    border: 1px solid transparent;
+    min-height: 28px;
+    padding: 2px 8px;
+}
+
+navigation-sidebar row:hover,
+.navigation-sidebar row:hover,
+stacksidebar row:hover {
+    background-color: @sway_hover;
+    color: @sway_text;
+}
+
+navigation-sidebar row:selected,
+.navigation-sidebar row:selected,
+stacksidebar row:selected {
+    background-color: @sway_selected;
+    border-color: @sway_border_strong;
+    color: @sway_text_bright;
 }
 
 selection,
 *:selected {
-    background-color: #333333;
-    color: #ffffff;
+    background-color: @sway_selected;
+    color: @sway_text_bright;
 }
 
 popover,
@@ -65,16 +180,16 @@ popover.menu,
 popover > contents,
 popover.menu > contents,
 menu {
-    background-color: #050505;
-    color: #eeeeee;
-    border: 1px solid #4a4a4a;
+    background-color: @sway_bg;
+    color: @sway_text;
+    border: 1px solid @sway_border_strong;
     box-shadow: none;
     padding: 3px;
 }
 
 popover > arrow {
-    background-color: #050505;
-    border: 1px solid #4a4a4a;
+    background-color: @sway_bg;
+    border: 1px solid @sway_border_strong;
 }
 
 popover modelbutton,
@@ -87,7 +202,9 @@ menuitem {
     background-color: transparent;
     background-image: none;
     border: 1px solid transparent;
-    color: #eeeeee;
+    color: @sway_text;
+    min-height: 24px;
+    padding: 4px 8px;
 }
 
 popover modelbutton:hover,
@@ -104,13 +221,94 @@ popover.menu row:hover,
 popover.menu row:selected,
 menuitem:hover,
 menuitem:selected {
-    background-color: #333333;
+    background-color: @sway_selected;
     background-image: none;
-    border-color: #4a4a4a;
-    color: #ffffff;
+    border-color: @sway_border_strong;
+    color: @sway_text_bright;
 }
 
 popover separator,
 separator {
-    background-color: #333333;
+    background-color: @sway_border;
+    min-height: 1px;
+}
+
+paned > separator {
+    background-color: @sway_border;
+    min-width: 1px;
+    min-height: 1px;
+}
+
+notebook,
+notebook > stack {
+    background-color: @sway_bg;
+    border-color: @sway_border;
+}
+
+notebook > header {
+    background-color: @sway_panel;
+    border-color: @sway_border;
+}
+
+notebook tab {
+    background-color: @sway_bg_alt;
+    border: 1px solid @sway_border;
+    color: @sway_muted;
+    padding: 4px 8px;
+}
+
+notebook tab:checked {
+    background-color: @sway_selected;
+    color: @sway_text_bright;
+}
+
+scrollbar {
+    background-color: @sway_bg;
+    border: 0;
+}
+
+scrollbar trough {
+    background-color: @sway_bg;
+    border: 0;
+}
+
+scrollbar slider {
+    background-color: @sway_selected;
+    border: 1px solid @sway_border_strong;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background-color: @sway_muted;
+}
+
+progressbar trough,
+levelbar trough {
+    background-color: @sway_bg_alt;
+    border: 1px solid @sway_border;
+    min-height: 4px;
+}
+
+progressbar progress,
+levelbar block.filled {
+    background-color: @sway_muted;
+    border: 0;
+}
+
+tooltip {
+    background-color: @sway_bg;
+    border: 1px solid @sway_border_strong;
+    color: @sway_text;
+}
+
+tooltip label {
+    color: @sway_text;
+    padding: 6px;
+}
+
+rubberband,
+.rubberband {
+    background-color: rgba(230, 230, 230, 0.12);
+    border: 1px solid @sway_text;
 }

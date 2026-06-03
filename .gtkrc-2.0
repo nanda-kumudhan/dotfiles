@@ -4,7 +4,7 @@
 include "/home/nanda-kumudhan/.gtkrc-2.0.mine"
 gtk-theme-name="gruvbox-dark-gtk"
 gtk-icon-theme-name="Papirus-Dark"
-gtk-font-name="Cantarell 11"
+gtk-font-name="JetBrainsMono Nerd Font 10"
 gtk-cursor-theme-name="default"
 gtk-cursor-theme-size=24
 gtk-toolbar-style=GTK_TOOLBAR_BOTH
