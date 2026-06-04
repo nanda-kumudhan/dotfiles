@@ -14,6 +14,9 @@ install_fonts=1
 enable_services=0
 assume_yes=0
 dry_run=0
+aur_helper=${DOTFILES_AUR_HELPER:-yay}
+install_aur=1
+use_arch_package_list=1
 
 usage() {
     cat <<'EOF'
@@ -27,6 +30,9 @@ Options:
   --deps-only         Install packages/fonts only.
   --files-only        Deploy dotfiles only.
   --no-fonts          Skip JetBrainsMono Nerd Font fallback install.
+  --no-aur            Skip AUR packages on Arch.
+  --aur-helper NAME   AUR helper to bootstrap on Arch: yay or paru. Default: yay.
+  --curated-packages  On Arch, use the built-in package list instead of packages.txt.
   --enable-services   Enable NetworkManager and bluetooth services if present.
   --log-file PATH     Write installer log to PATH.
   -y, --yes           Pass yes flags to package manager.
@@ -36,6 +42,7 @@ Options:
 Environment:
   DOTFILES_BACKUP_ROOT    Backup directory root. Default: ~/.dotfiles-backup
   DOTFILES_LOG_FILE       Installer log path. Default: ~/.dotfiles-backup/install-<timestamp>.log
+  DOTFILES_AUR_HELPER     AUR helper to use on Arch. Default: yay
 EOF
 }
 
@@ -99,6 +106,31 @@ as_root() {
     fi
 }
 
+confirm() {
+    prompt=$1
+
+    if [ "$assume_yes" -eq 1 ]; then
+        log "auto-confirm: $prompt"
+        return 0
+    fi
+
+    if [ -r /dev/tty ]; then
+        printf '%s [y/N] ' "$prompt" > /dev/tty
+        read -r answer < /dev/tty
+    else
+        warn "cannot prompt without a terminal: $prompt"
+        return 1
+    fi
+    case "$answer" in
+        y|Y|yes|YES|Yes)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --link)
@@ -118,6 +150,17 @@ while [ "$#" -gt 0 ]; do
             ;;
         --no-fonts)
             install_fonts=0
+            ;;
+        --no-aur)
+            install_aur=0
+            ;;
+        --aur-helper)
+            [ "${2:-}" ] || die "--aur-helper requires yay or paru"
+            aur_helper=$2
+            shift
+            ;;
+        --curated-packages)
+            use_arch_package_list=0
             ;;
         --enable-services)
             enable_services=1
@@ -144,6 +187,14 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+
+case "$aur_helper" in
+    yay|paru)
+        ;;
+    *)
+        die "--aur-helper must be yay or paru"
+        ;;
+esac
 
 detect_family() {
     [ -r /etc/os-release ] || die "cannot detect distro: /etc/os-release missing"
@@ -222,6 +273,134 @@ filter_arch_packages() {
     printf '%s\n' "${available[@]}"
 }
 
+read_arch_package_list() {
+    if [ "$use_arch_package_list" -eq 1 ] && [ -f "$repo_dir/packages.txt" ]; then
+        sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$repo_dir/packages.txt" | sort -u
+    else
+        printf '%s\n' "${arch_packages[@]}" | sort -u
+    fi
+}
+
+split_arch_packages() {
+    repo_out=$1
+    aur_out=$2
+    : > "$repo_out"
+    : > "$aur_out"
+
+    while IFS= read -r pkg; do
+        [ "$pkg" ] || continue
+        case "$pkg" in
+            "$aur_helper"|"$aur_helper"-debug|yay|yay-debug|paru|paru-debug|paru-bin|paru-bin-debug)
+                continue
+                ;;
+        esac
+
+        if pacman -Si "$pkg" >/dev/null 2>&1; then
+            printf '%s\n' "$pkg" >> "$repo_out"
+        else
+            printf '%s\n' "$pkg" >> "$aur_out"
+        fi
+    done < <(read_arch_package_list)
+}
+
+install_arch_base_tools() {
+    base=(base-devel git)
+
+    missing=()
+    for pkg in "${base[@]}"; do
+        if ! pacman -Q "$pkg" >/dev/null 2>&1; then
+            missing+=("$pkg")
+        fi
+    done
+
+    [ "${#missing[@]}" -gt 0 ] || return 0
+
+    log "Required Arch bootstrap packages: ${missing[*]}"
+    if confirm "Install Arch bootstrap packages with pacman?"; then
+        args=(-S --needed)
+        [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+        as_root pacman "${args[@]}" "${missing[@]}"
+    else
+        die "cannot continue without Arch bootstrap packages"
+    fi
+}
+
+ensure_aur_helper() {
+    [ "$install_aur" -eq 1 ] || return 0
+
+    if command -v "$aur_helper" >/dev/null 2>&1; then
+        log "AUR helper already available: $aur_helper"
+        return 0
+    fi
+
+    install_arch_base_tools
+
+    build_root=${DOTFILES_AUR_BUILD_DIR:-"${TMPDIR:-/tmp}/dotfiles-aur"}
+    src_dir="$build_root/$aur_helper"
+    aur_url="https://aur.archlinux.org/$aur_helper.git"
+
+    log "AUR helper not found: $aur_helper"
+    if ! confirm "Clone and build $aur_helper from AUR?"; then
+        die "AUR helper is required for AUR package installation"
+    fi
+
+    if [ "$dry_run" -eq 1 ]; then
+        log "dry-run: git clone $aur_url $src_dir"
+        log "dry-run: makepkg -si in $src_dir"
+        return 0
+    fi
+
+    mkdir -p "$build_root"
+    if [ -d "$src_dir/.git" ]; then
+        run git -C "$src_dir" pull --ff-only
+    else
+        run git clone "$aur_url" "$src_dir"
+    fi
+
+    makepkg_args=(-si)
+    [ "$assume_yes" -eq 1 ] && makepkg_args+=(--noconfirm)
+    run makepkg -C -f "${makepkg_args[@]}" -D "$src_dir"
+}
+
+install_arch_packages() {
+    command -v pacman >/dev/null 2>&1 || die "pacman not found"
+
+    repo_tmp=$(mktemp)
+    aur_tmp=$(mktemp)
+    split_arch_packages "$repo_tmp" "$aur_tmp"
+    mapfile -t repo_packages < "$repo_tmp"
+    mapfile -t aur_packages < "$aur_tmp"
+    rm -f "$repo_tmp" "$aur_tmp"
+
+    if [ "${#repo_packages[@]}" -gt 0 ]; then
+        log "Arch repo packages from $([ "$use_arch_package_list" -eq 1 ] && printf packages.txt || printf built-in-list): ${#repo_packages[@]}"
+        if confirm "Install ${#repo_packages[@]} Arch repo packages with pacman?"; then
+            args=(-S --needed)
+            [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+            as_root pacman "${args[@]}" "${repo_packages[@]}"
+        else
+            warn "skipped Arch repo packages"
+        fi
+    fi
+
+    if [ "$install_aur" -eq 0 ]; then
+        [ "${#aur_packages[@]}" -eq 0 ] || warn "skipped AUR packages because --no-aur was used: ${aur_packages[*]}"
+        return 0
+    fi
+
+    if [ "${#aur_packages[@]}" -gt 0 ]; then
+        log "AUR packages from packages.txt: ${#aur_packages[@]}"
+        if confirm "Install ${#aur_packages[@]} AUR packages with $aur_helper?"; then
+            ensure_aur_helper
+            args=(-S --needed)
+            [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+            run "$aur_helper" "${args[@]}" "${aur_packages[@]}"
+        else
+            warn "skipped AUR packages"
+        fi
+    fi
+}
+
 filter_debian_packages() {
     available=()
     missing=()
@@ -266,14 +445,7 @@ install_packages() {
 
     case "$family" in
         arch)
-            command -v pacman >/dev/null 2>&1 || die "pacman not found"
-            mapfile -t packages < <(filter_arch_packages "${arch_packages[@]}")
-            [ "${#packages[@]}" -gt 0 ] || return 0
-            log "Arch packages: ${#packages[@]}"
-
-            args=(-S --needed)
-            [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
-            as_root pacman "${args[@]}" "${packages[@]}"
+            install_arch_packages
             ;;
         debian)
             command -v apt-get >/dev/null 2>&1 || die "apt-get not found"

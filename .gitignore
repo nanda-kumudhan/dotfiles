@@ -1,6 +1,7 @@
 .cache/
 Trash/
 *.log
+pkglist-*.txt
 *.sqlite
 *.sqlite-*
 *.db
@@ -17,4 +18,3 @@ core.*
 .config/rofi/applications/
 .config/rofi/desktop-directories/
 .config/rofi/icons/
-

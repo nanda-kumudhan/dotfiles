@@ -10,6 +10,12 @@ Run from a fresh Arch, Debian/Ubuntu, or Fedora-family system:
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
+On Arch, this installs repo packages from `packages.txt`, bootstraps `yay` if needed, then installs AUR packages. Omit `-y` for confirmation prompts:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
+```
+
 Or clone and run locally:
 
 ```bash
@@ -26,6 +32,8 @@ Useful options:
 ./install.sh --files-only
 ./install.sh --deps-only -y
 ./install.sh --enable-services -y
+./install.sh --aur-helper paru
+./install.sh --no-aur
 ```
 
 ## Sync
