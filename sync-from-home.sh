@@ -8,6 +8,8 @@ log_file=${DOTFILES_SYNC_LOG_FILE:-"$repo_dir/sync-$timestamp.log"}
 dry_run=0
 check_only=0
 show_list=0
+sync_files=1
+sync_packages=1
 
 files=(
     .bashrc
@@ -71,11 +73,15 @@ usage() {
 Usage: ./sync-from-home.sh [options]
 
 Copies the selected live dotfiles from $HOME back into this repo.
+It also refreshes packages.txt from the current system.
 It never commits or pushes.
 
 Options:
   --check            Report which files differ without copying.
   --list             Print the allowlist and exit.
+  --files-only       Sync dotfiles only.
+  --packages-only    Refresh packages.txt only.
+  --no-packages      Skip packages.txt.
   --log-file PATH    Write sync log to PATH.
   -n, --dry-run      Print actions without changing files.
   -h, --help         Show this help.
@@ -124,6 +130,17 @@ while [ "$#" -gt 0 ]; do
         --list)
             show_list=1
             ;;
+        --files-only)
+            sync_packages=0
+            sync_files=1
+            ;;
+        --packages-only)
+            sync_files=0
+            sync_packages=1
+            ;;
+        --no-packages)
+            sync_packages=0
+            ;;
         --log-file)
             [ "${2:-}" ] || die "--log-file requires a path"
             log_file=$2
@@ -146,6 +163,7 @@ done
 
 if [ "$show_list" -eq 1 ]; then
     printf '%s\n' "${files[@]}"
+    printf '%s\n' packages.txt
     exit 0
 fi
 
@@ -174,6 +192,72 @@ sync_file() {
     log "synced: $rel"
 }
 
+detect_package_manager() {
+    if command -v pacman >/dev/null 2>&1; then
+        printf 'pacman'
+    elif command -v apt-mark >/dev/null 2>&1; then
+        printf 'apt'
+    elif command -v dnf >/dev/null 2>&1; then
+        printf 'dnf'
+    else
+        return 1
+    fi
+}
+
+write_package_list() {
+    manager=$1
+    output=$2
+
+    case "$manager" in
+        pacman)
+            pacman -Qqe | sort -u > "$output"
+            ;;
+        apt)
+            apt-mark showmanual | sort -u > "$output"
+            ;;
+        dnf)
+            dnf repoquery --userinstalled --qf '%{name}' | sort -u > "$output"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+sync_package_list() {
+    dest="$repo_dir/packages.txt"
+
+    if ! manager=$(detect_package_manager); then
+        warn "no supported package manager found for packages.txt"
+        return 0
+    fi
+
+    tmp=$(mktemp)
+    write_package_list "$manager" "$tmp"
+
+    if [ -f "$dest" ] && cmp -s "$tmp" "$dest"; then
+        log "current: packages.txt ($manager)"
+        rm -f "$tmp"
+        return 0
+    fi
+
+    if [ "$check_only" -eq 1 ]; then
+        log "differs: packages.txt ($manager)"
+        rm -f "$tmp"
+        return 0
+    fi
+
+    if [ "$dry_run" -eq 1 ]; then
+        log "dry-run: refresh packages.txt from $manager"
+        rm -f "$tmp"
+        return 0
+    fi
+
+    cp -- "$tmp" "$dest"
+    rm -f "$tmp"
+    log "synced: packages.txt ($manager)"
+}
+
 main() {
     setup_logging
     log "Repo: $repo_dir"
@@ -181,10 +265,16 @@ main() {
     log "Check only: $check_only"
 
     count=0
-    for rel in "${files[@]}"; do
-        count=$((count + 1))
-        sync_file "$rel"
-    done
+    if [ "$sync_files" -eq 1 ]; then
+        for rel in "${files[@]}"; do
+            count=$((count + 1))
+            sync_file "$rel"
+        done
+    fi
+
+    if [ "$sync_packages" -eq 1 ]; then
+        sync_package_list
+    fi
 
     log "Sync complete: $count allowlisted files processed"
     log "Review with: git -C '$repo_dir' status --short"

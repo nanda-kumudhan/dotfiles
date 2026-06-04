@@ -36,6 +36,8 @@ Copy selected live dotfiles back into this repo:
 ./sync-from-home.sh
 ```
 
+This also refreshes `packages.txt` from the current system. Arch uses `pacman -Qqe`; Debian/Ubuntu and Fedora use their native package tools.
+
 Check first:
 
 ```bash
