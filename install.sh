@@ -228,7 +228,7 @@ arch_packages=(
     pipewire pipewire-alsa pipewire-pulse wireplumber pavucontrol
     brightnessctl playerctl grim slurp wl-clipboard cliphist
     fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
-    libnotify jq git curl unzip xdg-utils openssh
+    libnotify jq git curl unzip xdg-utils openssh pciutils
     ttf-jetbrains-mono-nerd otf-font-awesome noto-fonts-emoji papirus-icon-theme
 )
 
@@ -253,6 +253,44 @@ fedora_packages=(
     libnotify jq git curl unzip xdg-utils openssh-clients
     jetbrains-mono-fonts fontawesome-fonts-all google-noto-emoji-fonts papirus-icon-theme
 )
+
+arch_driver_packages() {
+    packages=()
+    gpu_info=
+    cpu_info=
+
+    if command -v lspci >/dev/null 2>&1; then
+        gpu_info=$(lspci -nn | grep -Ei 'VGA|3D|Display' || true)
+    else
+        warn "lspci not found; install pciutils to enable GPU driver detection"
+    fi
+
+    if [ -r /proc/cpuinfo ]; then
+        cpu_info=$(grep -m1 '^vendor_id' /proc/cpuinfo || true)
+    fi
+
+    if printf '%s\n' "$gpu_info" | grep -Eiq 'Intel Corporation'; then
+        packages+=(intel-media-driver libva-intel-driver vulkan-intel mesa)
+    fi
+
+    if printf '%s\n' "$gpu_info" | grep -Eiq 'AMD/ATI|Advanced Micro Devices'; then
+        packages+=(mesa vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu)
+    fi
+
+    if printf '%s\n' "$gpu_info" | grep -Eiq 'NVIDIA Corporation'; then
+        packages+=(nvidia-utils nvidia-settings)
+        pacman -Q linux >/dev/null 2>&1 && packages+=(nvidia)
+        pacman -Q linux-lts >/dev/null 2>&1 && packages+=(nvidia-lts)
+    fi
+
+    if printf '%s\n' "$cpu_info" | grep -q 'GenuineIntel'; then
+        packages+=(intel-ucode)
+    elif printf '%s\n' "$cpu_info" | grep -q 'AuthenticAMD'; then
+        packages+=(amd-ucode)
+    fi
+
+    printf '%s\n' "${packages[@]}"
+}
 
 filter_arch_packages() {
     available=()
@@ -287,7 +325,11 @@ split_arch_packages() {
     : > "$repo_out"
     : > "$aur_out"
 
-    mapfile -t package_candidates < <(read_arch_package_list)
+    driver_tmp=$(mktemp)
+    arch_driver_packages > "$driver_tmp"
+    print_package_group "Detected hardware driver packages" "$driver_tmp"
+
+    mapfile -t package_candidates < <({ read_arch_package_list; cat "$driver_tmp"; } | sort -u)
     total=${#package_candidates[@]}
     current=0
 
@@ -315,6 +357,7 @@ split_arch_packages() {
     done
 
     log "Package classification complete"
+    rm -f "$driver_tmp"
 }
 
 split_installed_packages() {
