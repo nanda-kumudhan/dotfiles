@@ -19,7 +19,6 @@ files=(
     .gitconfig
     .gtkrc-2.0
     .vimrc
-    .emacs
     .vim/colors/sway-rice.vim
     .config/environment.d/qt.conf
     .config/fastfetch/config.jsonc
