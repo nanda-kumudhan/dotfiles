@@ -161,8 +161,11 @@ detect_family() {
         *" debian "*|*" ubuntu "*|*" linuxmint "*|*" pop "*)
             printf 'debian'
             ;;
+        *" fedora "*|*" rhel "*|*" centos "*)
+            printf 'fedora'
+            ;;
         *)
-            die "unsupported distro family: ${PRETTY_NAME:-unknown}. Supported: Arch and Debian/Ubuntu family"
+            die "unsupported distro family: ${PRETTY_NAME:-unknown}. Supported: Arch, Debian/Ubuntu, and Fedora family"
             ;;
     esac
 }
@@ -187,6 +190,17 @@ debian_packages=(
     fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
     libnotify-bin jq git curl unzip xdg-utils openssh-client dbus-user-session
     fonts-jetbrains-mono fonts-font-awesome fonts-noto-color-emoji papirus-icon-theme
+)
+
+fedora_packages=(
+    sway swayidle swaylock waybar foot rofi mako kanshi
+    xdg-desktop-portal xdg-desktop-portal-wlr polkit-gnome udiskie
+    NetworkManager bluez blueman
+    pipewire pipewire-alsa pipewire-pulseaudio wireplumber pavucontrol
+    brightnessctl playerctl grim slurp wl-clipboard cliphist
+    fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
+    libnotify jq git curl unzip xdg-utils openssh-clients
+    jetbrains-mono-fonts fontawesome-fonts-all google-noto-emoji-fonts papirus-icon-theme
 )
 
 filter_arch_packages() {
@@ -227,6 +241,25 @@ filter_debian_packages() {
     printf '%s\n' "${available[@]}"
 }
 
+filter_fedora_packages() {
+    available=()
+    missing=()
+
+    for pkg in "$@"; do
+        if dnf repoquery "$pkg" >/dev/null 2>&1; then
+            available+=("$pkg")
+        else
+            missing+=("$pkg")
+        fi
+    done
+
+    if [ "${#missing[@]}" -gt 0 ]; then
+        warn "not in configured Fedora repos: ${missing[*]}"
+    fi
+
+    printf '%s\n' "${available[@]}"
+}
+
 install_packages() {
     family=$1
     section "Installing packages"
@@ -253,6 +286,16 @@ install_packages() {
             args=(install)
             [ "$assume_yes" -eq 1 ] && args+=(-y)
             as_root apt-get "${args[@]}" "${packages[@]}"
+            ;;
+        fedora)
+            command -v dnf >/dev/null 2>&1 || die "dnf not found"
+            mapfile -t packages < <(filter_fedora_packages "${fedora_packages[@]}")
+            [ "${#packages[@]}" -gt 0 ] || return 0
+            log "Fedora packages: ${#packages[@]}"
+
+            args=(install)
+            [ "$assume_yes" -eq 1 ] && args+=(-y)
+            as_root dnf "${args[@]}" "${packages[@]}"
             ;;
     esac
 }
@@ -329,7 +372,7 @@ deploy_file() {
     dest="$HOME/$rel"
 
     case "$rel" in
-        .git/*|.git|.gitignore|README|README.*|install.sh|sync-from-home.sh)
+        .git/*|.git|.gitignore|README|README.*|install.sh|bootstrap.sh|sync-from-home.sh)
             return 0
             ;;
     esac

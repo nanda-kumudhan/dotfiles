@@ -1,8 +1,10 @@
 profile docked {
     output eDP-1 enable position 0,0 scale 1.0
     output HDMI-1 enable position 1920,0
+    exec /home/nanda-kumudhan/.config/sway/scripts/workspace-outputs apply
 }
 
 profile laptop {
     output eDP-1 enable position 0,0 scale 1.0
+    exec /home/nanda-kumudhan/.config/sway/scripts/workspace-outputs apply
 }

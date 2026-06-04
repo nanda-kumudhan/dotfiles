@@ -4,9 +4,9 @@
     "height": 24,
     "spacing": 0,
 
-    "modules-left": ["sway/workspaces", "sway/scratchpad"],
+    "modules-left": ["custom/launcher", "sway/workspaces", "sway/scratchpad"],
     "modules-center": ["mpris", "clock", "custom/pomodoro"],
-    "modules-right": ["network", "bluetooth", "custom/mic-muted", "wireplumber", "backlight", "battery", "idle_inhibitor", "privacy", "tray"],
+    "modules-right": ["network", "bluetooth", "custom/mic-muted", "wireplumber", "backlight", "battery", "idle_inhibitor", "privacy", "tray", "custom/power"],
 
     "sway/workspaces": {
         "format": "{name} {windows}",
@@ -56,7 +56,11 @@
             "2": [],
             "3": [],
             "4": [],
-            "5": []
+            "5": [],
+            "6": [],
+            "7": [],
+            "8": [],
+            "9": []
         }
     },
 
@@ -87,16 +91,16 @@
     },
 
     "mpris": {
-        "format": "{status_icon} {dynamic}",
-        "format-paused": "{status_icon} {dynamic}",
+        "format": "{status_icon}",
+        "format-paused": "{status_icon}",
         "format-stopped": "",
         "dynamic-order": ["artist", "title"],
         "dynamic-importance-order": ["title", "artist"],
         "dynamic-separator": " - ",
-        "dynamic-len": 26,
-        "artist-len": 12,
-        "title-len": 16,
-        "tooltip-format": "{player} ({status})\n{artist}\n{title}\n{album}",
+        "dynamic-len": 42,
+        "artist-len": 18,
+        "title-len": 28,
+        "tooltip-format": "{status_icon} {player} ({status})\nTitle: {title}\nArtist: {artist}\nAlbum: {album}\nLength: {length}",
         "status-icons": {
             "playing": "󰐊",
             "paused": "󰏤",
@@ -113,6 +117,24 @@
         "on-click": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro toggle",
         "on-click-right": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro reset",
         "on-click-middle": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro skip"
+    },
+
+    "custom/launcher": {
+        "exec": "printf ''",
+        "format": "{}",
+        "interval": "once",
+        "tooltip": true,
+        "tooltip-format": "Launch apps",
+        "on-click": "/home/nanda-kumudhan/.config/rofi/launcher"
+    },
+
+    "custom/power": {
+        "exec": "printf '󰐥'",
+        "format": "{}",
+        "interval": "once",
+        "tooltip": true,
+        "tooltip-format": "Power menu",
+        "on-click": "/home/nanda-kumudhan/.config/rofi/power"
     },
 
     "tray": {
@@ -198,7 +220,6 @@
             "activated": "󰛊",
             "deactivated": "󰛉"
         },
-        "tooltip": true,
         "tooltip-format-activated": "Idle inhibitor is on",
         "tooltip-format-deactivated": "Idle inhibitor is off"
     },

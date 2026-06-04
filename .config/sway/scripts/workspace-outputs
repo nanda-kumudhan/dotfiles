@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+assign() {
+    outputs=$(swaymsg -t get_outputs 2>/dev/null || printf '[]')
+    current=$(swaymsg -t get_workspaces 2>/dev/null | jq -r '.[] | select(.focused).name' 2>/dev/null || printf '')
+
+    if printf '%s\n' "$outputs" | jq -e '.[] | select(.name == "HDMI-1" and .active == true)' >/dev/null 2>&1; then
+        for ws in 1 2 3 4 5; do
+            swaymsg -q "workspace number $ws; move workspace to output eDP-1"
+        done
+        for ws in 6 7 8 9; do
+            swaymsg -q "workspace number $ws; move workspace to output HDMI-1"
+        done
+        [ "$current" ] && swaymsg -q "workspace $current"
+        return 0
+    fi
+
+    for ws in 1 2 3 4 5 6 7 8 9; do
+        swaymsg -q "workspace number $ws; move workspace to output eDP-1"
+    done
+    [ "$current" ] && swaymsg -q "workspace $current"
+}
+
+case "${1:-apply}" in
+    apply)
+        assign
+        ;;
+    *)
+        printf 'usage: %s [apply]\n' "$0" >&2
+        exit 2
+        ;;
+esac
