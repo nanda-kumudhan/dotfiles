@@ -287,20 +287,34 @@ split_arch_packages() {
     : > "$repo_out"
     : > "$aur_out"
 
-    while IFS= read -r pkg; do
+    mapfile -t package_candidates < <(read_arch_package_list)
+    total=${#package_candidates[@]}
+    current=0
+
+    log "Classifying $total Arch package names into repo/AUR groups"
+
+    for pkg in "${package_candidates[@]}"; do
         [ "$pkg" ] || continue
+        current=$((current + 1))
+        log "checking package $current/$total: $pkg"
+
         case "$pkg" in
             "$aur_helper"|"$aur_helper"-debug|yay|yay-debug|paru|paru-debug|paru-bin|paru-bin-debug)
+                log "skipping AUR helper package entry: $pkg"
                 continue
                 ;;
         esac
 
         if pacman -Si "$pkg" >/dev/null 2>&1; then
             printf '%s\n' "$pkg" >> "$repo_out"
+            log "repo package: $pkg"
         else
             printf '%s\n' "$pkg" >> "$aur_out"
+            log "AUR package: $pkg"
         fi
-    done < <(read_arch_package_list)
+    done
+
+    log "Package classification complete"
 }
 
 split_installed_packages() {
@@ -396,6 +410,8 @@ ensure_aur_helper() {
 install_arch_packages() {
     command -v pacman >/dev/null 2>&1 || die "pacman not found"
 
+    log "Preparing Arch package install plan"
+
     repo_tmp=$(mktemp)
     aur_tmp=$(mktemp)
     repo_installed_tmp=$(mktemp)
@@ -403,7 +419,9 @@ install_arch_packages() {
     aur_installed_tmp=$(mktemp)
     aur_missing_tmp=$(mktemp)
     split_arch_packages "$repo_tmp" "$aur_tmp"
+    log "Checking which repo packages are already installed"
     split_installed_packages "$repo_tmp" "$repo_installed_tmp" "$repo_missing_tmp"
+    log "Checking which AUR packages are already installed"
     split_installed_packages "$aur_tmp" "$aur_installed_tmp" "$aur_missing_tmp"
     mapfile -t repo_packages < "$repo_missing_tmp"
     mapfile -t aur_packages < "$aur_missing_tmp"
@@ -416,7 +434,9 @@ install_arch_packages() {
         if confirm "Continue installing ${#repo_packages[@]} missing Arch repo packages with pacman?"; then
             args=(-S --needed)
             [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+            log "Starting pacman install for ${#repo_packages[@]} repo packages"
             as_root pacman "${args[@]}" "${repo_packages[@]}"
+            log "Finished pacman repo package install"
         else
             warn "skipped Arch repo packages"
         fi
@@ -436,7 +456,9 @@ install_arch_packages() {
             ensure_aur_helper
             args=(-S --needed)
             [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+            log "Starting $aur_helper install for ${#aur_packages[@]} AUR packages"
             run "$aur_helper" "${args[@]}" "${aur_packages[@]}"
+            log "Finished $aur_helper AUR package install"
         else
             warn "skipped AUR packages"
         fi
