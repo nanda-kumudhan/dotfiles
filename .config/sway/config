@@ -224,6 +224,7 @@ bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
 bindsym XF86Tools exec $gui_env pavucontrol
 bindsym XF86Display exec wdisplays
 bindsym XF86AudioPrev exec playerctl previous
+bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPlay exec playerctl play-pause
 bindsym F11 exec notify-send "Shortcuts" "$(cat ~/.keybinds_help)"
 bindsym XF86MonBrightnessDown exec "brightnessctl s 3%- -n 0.3l%"
