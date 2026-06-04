@@ -303,6 +303,37 @@ split_arch_packages() {
     done < <(read_arch_package_list)
 }
 
+split_installed_packages() {
+    input=$1
+    installed_out=$2
+    missing_out=$3
+    : > "$installed_out"
+    : > "$missing_out"
+
+    while IFS= read -r pkg; do
+        [ "$pkg" ] || continue
+        if pacman -Q "$pkg" >/dev/null 2>&1; then
+            printf '%s\n' "$pkg" >> "$installed_out"
+        else
+            printf '%s\n' "$pkg" >> "$missing_out"
+        fi
+    done < "$input"
+}
+
+print_package_group() {
+    title=$1
+    file=$2
+
+    if [ ! -s "$file" ]; then
+        log "$title: none"
+        return 0
+    fi
+
+    count=$(wc -l < "$file")
+    log "$title ($count):"
+    sed 's/^/  - /' "$file"
+}
+
 install_arch_base_tools() {
     base=(base-devel git)
 
@@ -367,14 +398,22 @@ install_arch_packages() {
 
     repo_tmp=$(mktemp)
     aur_tmp=$(mktemp)
+    repo_installed_tmp=$(mktemp)
+    repo_missing_tmp=$(mktemp)
+    aur_installed_tmp=$(mktemp)
+    aur_missing_tmp=$(mktemp)
     split_arch_packages "$repo_tmp" "$aur_tmp"
-    mapfile -t repo_packages < "$repo_tmp"
-    mapfile -t aur_packages < "$aur_tmp"
-    rm -f "$repo_tmp" "$aur_tmp"
+    split_installed_packages "$repo_tmp" "$repo_installed_tmp" "$repo_missing_tmp"
+    split_installed_packages "$aur_tmp" "$aur_installed_tmp" "$aur_missing_tmp"
+    mapfile -t repo_packages < "$repo_missing_tmp"
+    mapfile -t aur_packages < "$aur_missing_tmp"
+
+    log "Arch package source: $([ "$use_arch_package_list" -eq 1 ] && printf packages.txt || printf built-in-list)"
+    print_package_group "Already installed repo packages" "$repo_installed_tmp"
+    print_package_group "Repo packages to install with pacman" "$repo_missing_tmp"
 
     if [ "${#repo_packages[@]}" -gt 0 ]; then
-        log "Arch repo packages from $([ "$use_arch_package_list" -eq 1 ] && printf packages.txt || printf built-in-list): ${#repo_packages[@]}"
-        if confirm "Install ${#repo_packages[@]} Arch repo packages with pacman?"; then
+        if confirm "Continue installing ${#repo_packages[@]} missing Arch repo packages with pacman?"; then
             args=(-S --needed)
             [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
             as_root pacman "${args[@]}" "${repo_packages[@]}"
@@ -383,14 +422,17 @@ install_arch_packages() {
         fi
     fi
 
+    print_package_group "Already installed AUR packages" "$aur_installed_tmp"
+    print_package_group "AUR packages to install with $aur_helper" "$aur_missing_tmp"
+
     if [ "$install_aur" -eq 0 ]; then
-        [ "${#aur_packages[@]}" -eq 0 ] || warn "skipped AUR packages because --no-aur was used: ${aur_packages[*]}"
+        [ ! -s "$aur_missing_tmp" ] || warn "skipped missing AUR packages because --no-aur was used: $(tr '\n' ' ' < "$aur_missing_tmp")"
+        rm -f "$repo_tmp" "$aur_tmp" "$repo_installed_tmp" "$repo_missing_tmp" "$aur_installed_tmp" "$aur_missing_tmp"
         return 0
     fi
 
     if [ "${#aur_packages[@]}" -gt 0 ]; then
-        log "AUR packages from packages.txt: ${#aur_packages[@]}"
-        if confirm "Install ${#aur_packages[@]} AUR packages with $aur_helper?"; then
+        if confirm "Continue installing ${#aur_packages[@]} missing AUR packages with $aur_helper?"; then
             ensure_aur_helper
             args=(-S --needed)
             [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
@@ -399,6 +441,8 @@ install_arch_packages() {
             warn "skipped AUR packages"
         fi
     fi
+
+    rm -f "$repo_tmp" "$aur_tmp" "$repo_installed_tmp" "$repo_missing_tmp" "$aur_installed_tmp" "$aur_missing_tmp"
 }
 
 filter_debian_packages() {

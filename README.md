@@ -10,7 +10,7 @@ Run from a fresh Arch, Debian/Ubuntu, or Fedora-family system:
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
-On Arch, this installs repo packages from `packages.txt`, bootstraps `yay` if needed, then installs AUR packages. Omit `-y` for confirmation prompts:
+On Arch, this reads `packages.txt`, shows what is already installed, asks before installing missing repo/AUR packages, and bootstraps `yay` if needed. Omit `-y` for confirmation prompts:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
