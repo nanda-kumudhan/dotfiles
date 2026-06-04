@@ -60,8 +60,6 @@ files=(
     .config/sway/scripts/session-env
     .config/sway/scripts/caffeine
     .config/sway/scripts/workspace-outputs
-    .config/wallpapers/arch-cyber-abstract-monochrome.png
-    .config/wallpapers/arch-thinkpad-cyber-monochrome.png
     .config/waybar/config.jsonc
     .config/waybar/scripts/pomodoro
     .config/waybar/style.css
