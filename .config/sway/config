@@ -20,7 +20,7 @@ set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
 set $gui_env /home/nanda-kumudhan/.config/sway/scripts/gui-env
 set $wallpaper /home/nanda-kumudhan/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
-set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=default XCURSOR_SIZE=24
+set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -104,6 +104,7 @@ exec_always sh -c 'command -v kanshi >/dev/null 2>&1 || exit 0; pkill -x kanshi 
 exec_always $clipboard_watch
 
 # --- Input ---
+seat * xcursor_theme capitaine-cursors 24
 input * xkb_layout gb
 
 input "type:touchpad" {

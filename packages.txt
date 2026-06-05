@@ -13,6 +13,7 @@ blueman
 bluez
 bluez-utils
 brightnessctl
+capitaine-cursors
 cliphist
 dbeaver
 distrobox
