@@ -22,7 +22,7 @@ slider_width=2
 slider_handle_width=18
 slider_handle_length=18
 center_toolbar_handle=true
-check_size=14
+check_size=16
 textless_progressbar=false
 progressbar_thickness=2
 menubar_mouse_tracking=true
@@ -84,8 +84,8 @@ light.color=#161616
 mid.light.color=#111111
 dark.color=#000000
 mid.color=#0b0b0b
-highlight.color=#4a4a4a
-inactive.highlight.color=#333333
+highlight.color=#504945
+inactive.highlight.color=#3c3836
 text.color=#eeeeee
 window.text.color=#eeeeee
 button.text.color=#eeeeee
@@ -185,6 +185,8 @@ frame=false
 interior.element=radio
 text.normal.color=#eeeeee
 text.focus.color=#eeeeee
+text.press.color=#ffffff
+text.toggle.color=#ffffff
 
 [CheckBox]
 inherits=PanelButtonCommand
@@ -192,6 +194,8 @@ frame=false
 interior.element=checkbox
 text.normal.color=#eeeeee
 text.focus.color=#eeeeee
+text.press.color=#ffffff
+text.toggle.color=#ffffff
 
 [Focus]
 inherits=PanelButtonCommand

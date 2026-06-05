@@ -529,6 +529,127 @@ filter_debian_packages() {
     printf '%s\n' "${available[@]}"
 }
 
+read_package_list() {
+    if [ -f "$repo_dir/packages.txt" ]; then
+        sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$repo_dir/packages.txt" | sort -u
+    else
+        return 1
+    fi
+}
+
+debian_package_names() {
+    pkg=$1
+
+    case "$pkg" in
+        android-studio|android-tools|arduino-cli|arduino-ide-bin)
+            return 0
+            ;;
+        base|base-devel|efibootmgr|ex-vi-compat|greetd-tuigreet|intel-ucode)
+            return 0
+            ;;
+        linux|linux-firmware|linux-lts|pacman-contrib|paru*|yay*|sbctl|systemd-ukify|zram-generator)
+            return 0
+            ;;
+        *-bin|*-git|*-debug)
+            return 0
+            ;;
+        7zip)
+            printf '%s\n' 7zip p7zip-full
+            ;;
+        bind)
+            printf '%s\n' bind9-dnsutils
+            ;;
+        bluez-utils)
+            printf '%s\n' bluez-tools
+            ;;
+        freerdp)
+            printf '%s\n' freerdp2-x11 freerdp3-x11
+            ;;
+        gst-plugin-pipewire)
+            printf '%s\n' gstreamer1.0-pipewire
+            ;;
+        kvantum|kvantum-qt5)
+            printf '%s\n' qt5-style-kvantum
+            ;;
+        libpulse)
+            printf '%s\n' libpulse0
+            ;;
+        libreoffice-fresh)
+            printf '%s\n' libreoffice
+            ;;
+        mako)
+            printf '%s\n' mako-notifier
+            ;;
+        man-db)
+            printf '%s\n' man-db
+            ;;
+        networkmanager)
+            printf '%s\n' network-manager
+            ;;
+        networkmanager-openconnect)
+            printf '%s\n' network-manager-openconnect
+            ;;
+        networkmanager-openvpn)
+            printf '%s\n' network-manager-openvpn
+            ;;
+        noto-fonts)
+            printf '%s\n' fonts-noto
+            ;;
+        noto-fonts-emoji)
+            printf '%s\n' fonts-noto-color-emoji
+            ;;
+        openssh)
+            printf '%s\n' openssh-client
+            ;;
+        pipewire-alsa)
+            printf '%s\n' pipewire-alsa
+            ;;
+        pipewire-jack)
+            printf '%s\n' pipewire-jack
+            ;;
+        polkit-gnome)
+            printf '%s\n' policykit-1-gnome
+            ;;
+        qemu-desktop)
+            printf '%s\n' qemu-system qemu-utils
+            ;;
+        sof-firmware)
+            printf '%s\n' firmware-sof-signed
+            ;;
+        texlive-fontsrecommended)
+            printf '%s\n' texlive-fonts-recommended
+            ;;
+        texlive-latexextra)
+            printf '%s\n' texlive-latex-extra
+            ;;
+        ttf-jetbrains-mono|ttf-jetbrains-mono-nerd)
+            printf '%s\n' fonts-jetbrains-mono
+            ;;
+        vulkan-intel)
+            printf '%s\n' mesa-vulkan-drivers
+            ;;
+        xorg-xwayland)
+            printf '%s\n' xwayland
+            ;;
+        zathura-pdf-poppler)
+            printf '%s\n' zathura-pdf-poppler
+            ;;
+        *)
+            printf '%s\n' "$pkg"
+            ;;
+    esac
+}
+
+read_debian_package_list() {
+    if read_package_list >/dev/null 2>&1; then
+        while IFS= read -r pkg; do
+            debian_package_names "$pkg"
+        done < <(read_package_list)
+    else
+        printf '%s\n' "${debian_packages[@]}"
+    fi | sort -u
+}
+
 filter_fedora_packages() {
     available=()
     missing=()
@@ -560,7 +681,10 @@ install_packages() {
             command -v apt-get >/dev/null 2>&1 || die "apt-get not found"
             as_root apt-get update
 
-            mapfile -t packages < <(filter_debian_packages "${debian_packages[@]}")
+            mapfile -t package_candidates < <(read_debian_package_list)
+            log "Debian package source: $([ -f "$repo_dir/packages.txt" ] && printf packages.txt || printf built-in-list)"
+            log "Debian package candidates after mapping: ${#package_candidates[@]}"
+            mapfile -t packages < <(filter_debian_packages "${package_candidates[@]}")
             [ "${#packages[@]}" -gt 0 ] || return 0
             log "Debian packages: ${#packages[@]}"
 

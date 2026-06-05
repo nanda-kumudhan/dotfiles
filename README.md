@@ -10,7 +10,7 @@ Run from a fresh Arch, Debian/Ubuntu, or Fedora-family system:
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
-On Arch, this reads `packages.txt`, shows what is already installed, asks before installing missing repo/AUR packages, and bootstraps `yay` if needed. Omit `-y` for confirmation prompts:
+On Arch, this reads `packages.txt`, shows what is already installed, asks before installing missing repo/AUR packages, and bootstraps `yay` if needed. On Debian/Ubuntu, it maps known Arch package names to APT package names and skips packages that are unavailable in the configured repositories, such as Android Studio, Arduino IDE, and AUR-only themes. Omit `-y` for confirmation prompts:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash

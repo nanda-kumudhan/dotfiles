@@ -1,8 +1,8 @@
 font=JetBrains Mono 10
 background-color=#000000
-text-color=#c9d1d9
-border-color=#30363d
-progress-color=over #161b22
+text-color=#eeeeee
+border-color=#333333
+progress-color=over #111111
 
 width=360
 height=96
@@ -21,15 +21,15 @@ markup=1
 actions=1
 
 [urgency=low]
-text-color=#8b949e
-border-color=#30363d
+text-color=#aaaaaa
+border-color=#333333
 default-timeout=3000
 
 [urgency=normal]
-border-color=#30363d
+border-color=#333333
 
 [urgency=high]
-background-color=#21262d
-text-color=#c9d1d9
-border-color=#f0f6fc
+background-color=#111111
+text-color=#eeeeee
+border-color=#ffffff
 default-timeout=0

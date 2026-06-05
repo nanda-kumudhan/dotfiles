@@ -9,9 +9,9 @@ vim.o.background = "dark"
 
 local p = {
   bg = "#000000",
-  surface = "#11161d",
-  surface_strong = "#1c2733",
-  separator = "#2f4054",
+  surface = "#111111",
+  surface_strong = "#333333",
+  separator = "#333333",
   fg = "#d7dee8",
   dim = "#8a93a0",
   muted = "#56616f",

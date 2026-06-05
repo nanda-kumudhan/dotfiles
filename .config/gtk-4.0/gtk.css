@@ -2,7 +2,7 @@
 @define-color sway_bg_alt #050505;
 @define-color sway_panel #000000;
 @define-color sway_hover #111111;
-@define-color sway_selected #333333;
+@define-color sway_selected #504945;
 @define-color sway_border #2a2a2a;
 @define-color sway_border_strong #4a4a4a;
 @define-color sway_text #e6e6e6;
@@ -95,6 +95,39 @@ switch:checked {
     background-color: @sway_selected;
     border-color: @sway_border_strong;
     color: @sway_text_bright;
+}
+
+checkbutton check,
+check,
+radio {
+    background-color: @sway_bg_alt;
+    background-image: none;
+    border: 1px solid @sway_border_strong;
+    color: @sway_text_bright;
+    min-height: 15px;
+    min-width: 15px;
+}
+
+checkbutton check:hover,
+check:hover,
+radio:hover {
+    background-color: @sway_hover;
+    border-color: @sway_text;
+}
+
+checkbutton check:checked,
+check:checked,
+radio:checked {
+    background-color: @sway_selected;
+    border-color: @sway_text_bright;
+    color: @sway_text_bright;
+}
+
+checkbutton check:disabled,
+check:disabled,
+radio:disabled {
+    border-color: @sway_dim;
+    color: @sway_dim;
 }
 
 button:disabled,

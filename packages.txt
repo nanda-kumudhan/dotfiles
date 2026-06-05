@@ -71,7 +71,6 @@ pacman-contrib
 papirus-folders
 papirus-icon-theme
 paru-bin-debug
-pciutils
 pavucontrol
 pipewire
 pipewire-alsa
