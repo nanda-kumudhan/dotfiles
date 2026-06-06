@@ -10,6 +10,7 @@ set $network_menu $HOME/.config/rofi/network
 set $bluetooth_menu $HOME/.config/rofi/bluetooth
 set $clipboard_menu $HOME/.config/rofi/clipboard
 set $power_menu $HOME/.config/rofi/power
+set $display_menu $HOME/.config/rofi/displays
 
 # App launchers
 set $launcher $HOME/.config/rofi/launcher
@@ -147,7 +148,8 @@ bindsym $mod+r layout toggle split
 bindsym $mod+f fullscreen toggle
 bindsym $mod+d floating toggle
 bindsym $mod+Shift+d sticky toggle
-bindsym $mod+p exec $gui_env wdisplays
+bindsym $mod+p exec $display_menu
+bindsym $mod+Shift+p exec $gui_env wdisplays
 bindsym $mod+c move position center
 bindsym $mod+t layout tabbed
 bindsym $mod+Shift+r reload
@@ -223,7 +225,7 @@ bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
 
 # System / media
 bindsym XF86Tools exec $gui_env pavucontrol
-bindsym XF86Display exec wdisplays
+bindsym XF86Display exec $display_menu
 bindsym XF86AudioPrev exec playerctl previous
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPlay exec playerctl play-pause

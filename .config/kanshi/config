@@ -1,6 +1,6 @@
-profile docked {
+profile home {
     output eDP-1 enable position 0,0 scale 1.0
-    output HDMI-1 enable position 1920,0
+    output "Ancor Communications Inc ASUS VP247 G7LMTF034049" enable position 1920,0
     exec $HOME/.config/sway/scripts/workspace-outputs apply
 }
 
