@@ -2,7 +2,7 @@
 
 runtime="${XDG_RUNTIME_DIR:-/tmp}"
 state_file="$runtime/sway-caffeine.state"
-lock="/home/nanda-kumudhan/.config/sway/scripts/lock"
+lock="$HOME/.config/sway/scripts/lock"
 
 is_on() {
     [ -f "$state_file" ]

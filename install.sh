@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 repo_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 backup_root=${DOTFILES_BACKUP_ROOT:-"$HOME/.dotfiles-backup"}
@@ -11,12 +11,18 @@ mode=link
 install_deps=1
 install_files=1
 install_fonts=1
+install_themes=1
 enable_services=0
 assume_yes=0
 dry_run=0
 aur_helper=${DOTFILES_AUR_HELPER:-yay}
 install_aur=1
 use_arch_package_list=1
+warning_count=0
+current_stage="initialization"
+install_started_at=$SECONDS
+temporary_paths=()
+active_command=
 
 usage() {
     cat <<'EOF'
@@ -27,9 +33,10 @@ Installs dependencies and deploys this dotfiles repo into $HOME with backups.
 Options:
   --link              Symlink files into $HOME. Default.
   --copy              Copy files into $HOME instead of symlinking.
-  --deps-only         Install packages/fonts only.
+  --deps-only         Install packages, fonts, and themes only.
   --files-only        Deploy dotfiles only.
   --no-fonts          Skip JetBrainsMono Nerd Font fallback install.
+  --no-themes         Skip Papirus and Gruvbox theme fallback installs.
   --no-aur            Skip AUR packages on Arch.
   --aur-helper NAME   AUR helper to bootstrap on Arch: yay or paru. Default: yay.
   --curated-packages  On Arch, use the built-in package list instead of packages.txt.
@@ -51,6 +58,8 @@ log() {
 }
 
 warn() {
+    active_command=
+    warning_count=$((warning_count + 1))
     printf '[%s] warning: %s\n' "$(date +%H:%M:%S)" "$*" >&2
 }
 
@@ -60,15 +69,60 @@ die() {
 }
 
 section() {
+    current_stage=$*
     log ""
     log "==> $*"
 }
+
+register_temp() {
+    temporary_paths+=("$1")
+}
+
+cleanup() {
+    local path
+
+    for path in "${temporary_paths[@]:-}"; do
+        [ -n "$path" ] || continue
+        rm -rf -- "$path" 2>/dev/null || true
+    done
+}
+
+on_error() {
+    local status=$?
+    local line=${BASH_LINENO[0]:-unknown}
+    local command=${active_command:-${BASH_COMMAND:-unknown}}
+
+    printf '[%s] error: stage failed: %s\n' "$(date +%H:%M:%S)" "$current_stage" >&2
+    printf '[%s] error: command exited with status %s at line %s: %s\n' \
+        "$(date +%H:%M:%S)" "$status" "$line" "$command" >&2
+    printf '[%s] error: review the log for the preceding command output: %s\n' \
+        "$(date +%H:%M:%S)" "$log_file" >&2
+    exit "$status"
+}
+
+on_exit() {
+    local status=$?
+    cleanup
+
+    if [ "$status" -ne 0 ]; then
+        printf '[%s] error: installer stopped with status %s during: %s\n' \
+            "$(date +%H:%M:%S)" "$status" "$current_stage" >&2
+    fi
+}
+
+trap on_error ERR
+trap on_exit EXIT
 
 quote_cmd() {
     printf '%q ' "$@"
 }
 
 setup_logging() {
+    if [ "$dry_run" -eq 1 ]; then
+        log "Dry run: log file creation skipped"
+        return 0
+    fi
+
     log_dir=$(dirname -- "$log_file")
     mkdir -p -- "$log_dir"
     touch "$log_file"
@@ -77,20 +131,26 @@ setup_logging() {
 }
 
 run() {
+    local cmd
+    local started_at=$SECONDS
+    local status
+
     cmd=$(quote_cmd "$@")
     if [ "$dry_run" -eq 1 ]; then
         log "dry-run: $cmd"
     else
         log "run: $cmd"
-        "$@"
-    fi
-}
-
-run_shell() {
-    if [ "$dry_run" -eq 1 ]; then
-        printf '+ %s\n' "$*"
-    else
-        eval "$@"
+        active_command=$cmd
+        if "$@"; then
+            active_command=
+            log "ok ($((SECONDS - started_at))s): $cmd"
+        else
+            status=$?
+            warning_count=$((warning_count + 1))
+            printf '[%s] warning: failed with status %s after %ss: %s\n' \
+                "$(date +%H:%M:%S)" "$status" "$((SECONDS - started_at))" "$cmd" >&2
+            return "$status"
+        fi
     fi
 }
 
@@ -104,6 +164,54 @@ as_root() {
     else
         die "sudo is required when not running as root"
     fi
+}
+
+install_individually_on_failure() {
+    local label=$1
+    local runner=$2
+    shift 2
+    local -a prefix=()
+    local -a packages=()
+    local -a failed=()
+    local parsing_packages=0
+    local item
+
+    for item in "$@"; do
+        if [ "$item" = "--" ]; then
+            parsing_packages=1
+        elif [ "$parsing_packages" -eq 0 ]; then
+            prefix+=("$item")
+        else
+            packages+=("$item")
+        fi
+    done
+
+    [ "${#packages[@]}" -gt 0 ] || return 0
+
+    log "$label: attempting batch install of ${#packages[@]} package(s)"
+    if "$runner" "${prefix[@]}" "${packages[@]}"; then
+        log "$label: batch install completed"
+        return 0
+    fi
+
+    warn "$label batch install failed; retrying each package separately"
+    for item in "${packages[@]}"; do
+        log "$label: installing package: $item"
+        if "$runner" "${prefix[@]}" "$item"; then
+            log "$label: installed package: $item"
+        else
+            failed+=("$item")
+            warn "$label: could not install package: $item"
+        fi
+    done
+
+    if [ "${#failed[@]}" -gt 0 ]; then
+        warn "$label completed with ${#failed[@]} failed package(s): ${failed[*]}"
+    else
+        log "$label: all packages installed successfully after individual retries"
+    fi
+
+    return 0
 }
 
 confirm() {
@@ -149,10 +257,14 @@ while [ "$#" -gt 0 ]; do
         --files-only)
             install_deps=0
             install_fonts=0
+            install_themes=0
             install_files=1
             ;;
         --no-fonts)
             install_fonts=0
+            ;;
+        --no-themes)
+            install_themes=0
             ;;
         --no-aur)
             install_aur=0
@@ -244,6 +356,7 @@ debian_packages=(
     fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
     libnotify-bin jq git curl unzip xdg-utils openssh-client dbus-user-session
     fonts-jetbrains-mono fonts-font-awesome fonts-noto-color-emoji papirus-icon-theme
+    sassc gtk2-engines-murrine gnome-themes-extra
 )
 
 fedora_packages=(
@@ -255,6 +368,7 @@ fedora_packages=(
     fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
     libnotify jq git curl unzip xdg-utils openssh-clients
     jetbrains-mono-fonts fontawesome-fonts-all google-noto-emoji-fonts papirus-icon-theme
+    sassc gtk-murrine-engine gnome-themes-extra
 )
 
 arch_driver_packages() {
@@ -329,6 +443,7 @@ split_arch_packages() {
     : > "$aur_out"
 
     driver_tmp=$(mktemp)
+    register_temp "$driver_tmp"
     arch_driver_packages > "$driver_tmp"
     print_package_group "Detected hardware driver packages" "$driver_tmp"
 
@@ -394,6 +509,22 @@ print_package_group() {
     sed 's/^/  - /' "$file"
 }
 
+print_array_group() {
+    local title=$1
+    shift
+    local item
+
+    if [ "$#" -eq 0 ]; then
+        log "$title: none"
+        return 0
+    fi
+
+    log "$title ($#):"
+    for item in "$@"; do
+        printf '  - %s\n' "$item"
+    done
+}
+
 install_arch_base_tools() {
     base=(base-devel git)
 
@@ -441,11 +572,16 @@ ensure_aur_helper() {
         return 0
     fi
 
-    mkdir -p "$build_root"
+    run mkdir -p "$build_root"
     if [ -d "$src_dir/.git" ]; then
-        run git -C "$src_dir" pull --ff-only
+        if ! run git -C "$src_dir" pull --ff-only; then
+            warn "failed to update the existing $aur_helper checkout; rebuilding the current checkout"
+        fi
     else
-        run git clone "$aur_url" "$src_dir"
+        if ! run git clone "$aur_url" "$src_dir"; then
+            warn "failed to clone $aur_helper; skipping AUR packages"
+            return 1
+        fi
     fi
 
     makepkg_args=(-si)
@@ -464,6 +600,12 @@ install_arch_packages() {
     repo_missing_tmp=$(mktemp)
     aur_installed_tmp=$(mktemp)
     aur_missing_tmp=$(mktemp)
+    register_temp "$repo_tmp"
+    register_temp "$aur_tmp"
+    register_temp "$repo_installed_tmp"
+    register_temp "$repo_missing_tmp"
+    register_temp "$aur_installed_tmp"
+    register_temp "$aur_missing_tmp"
     split_arch_packages "$repo_tmp" "$aur_tmp"
     log "Checking which repo packages are already installed"
     split_installed_packages "$repo_tmp" "$repo_installed_tmp" "$repo_missing_tmp"
@@ -480,9 +622,9 @@ install_arch_packages() {
         if confirm "Continue installing ${#repo_packages[@]} missing Arch repo packages with pacman?"; then
             args=(-S --needed)
             [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
-            log "Starting pacman install for ${#repo_packages[@]} repo packages"
-            as_root pacman "${args[@]}" "${repo_packages[@]}"
-            log "Finished pacman repo package install"
+            install_individually_on_failure \
+                "pacman repository packages" as_root \
+                pacman "${args[@]}" -- "${repo_packages[@]}"
         else
             warn "skipped Arch repo packages"
         fi
@@ -499,12 +641,15 @@ install_arch_packages() {
 
     if [ "${#aur_packages[@]}" -gt 0 ]; then
         if confirm "Continue installing ${#aur_packages[@]} missing AUR packages with $aur_helper?"; then
-            ensure_aur_helper
-            args=(-S --needed)
-            [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
-            log "Starting $aur_helper install for ${#aur_packages[@]} AUR packages"
-            run "$aur_helper" "${args[@]}" "${aur_packages[@]}"
-            log "Finished $aur_helper AUR package install"
+            if ensure_aur_helper; then
+                args=(-S --needed)
+                [ "$assume_yes" -eq 1 ] && args+=(--noconfirm)
+                install_individually_on_failure \
+                    "$aur_helper AUR packages" run \
+                    "$aur_helper" "${args[@]}" -- "${aur_packages[@]}"
+            else
+                warn "AUR helper setup failed; skipping AUR packages"
+            fi
         else
             warn "skipped AUR packages"
         fi
@@ -514,12 +659,17 @@ install_arch_packages() {
 }
 
 filter_debian_packages() {
-    available=()
-    missing=()
+    local result_name=$1
+    shift
+    local -n result=$result_name
+    local missing=()
+    local pkg
+
+    result=()
 
     for pkg in "$@"; do
         if apt-cache show "$pkg" >/dev/null 2>&1; then
-            available+=("$pkg")
+            result+=("$pkg")
         else
             missing+=("$pkg")
         fi
@@ -529,33 +679,14 @@ filter_debian_packages() {
         warn "not in configured APT repos: ${missing[*]}"
     fi
 
-    printf '%s\n' "${available[@]}"
 }
 
 install_debian_packages() {
     local args=(install)
-    local failed=()
-    local pkg
 
     [ "$assume_yes" -eq 1 ] && args+=(-y)
-
-    if as_root apt-get "${args[@]}" "$@"; then
-        return 0
-    fi
-
-    warn "APT batch install failed; retrying packages individually"
-    for pkg in "$@"; do
-        if ! as_root apt-get "${args[@]}" "$pkg"; then
-            failed+=("$pkg")
-        fi
-    done
-
-    if [ "${#failed[@]}" -gt 0 ]; then
-        warn "APT could not install ${#failed[@]} package(s): ${failed[*]}"
-        warn "continuing with the rest of the installer"
-    fi
-
-    return 0
+    install_individually_on_failure \
+        "APT packages" as_root apt-get "${args[@]}" -- "$@"
 }
 
 read_package_list() {
@@ -564,6 +695,21 @@ read_package_list() {
     else
         return 1
     fi
+}
+
+first_debian_package() {
+    local fallback=$1
+    local pkg
+
+    for pkg in "$@"; do
+        if apt-cache show "$pkg" >/dev/null 2>&1; then
+            printf '%s\n' "$pkg"
+            return 0
+        fi
+    done
+
+    # Let the normal availability filter report the missing package.
+    printf '%s\n' "$fallback"
 }
 
 debian_package_names() {
@@ -583,7 +729,7 @@ debian_package_names() {
             return 0
             ;;
         7zip)
-            printf '%s\n' 7zip p7zip-full
+            first_debian_package 7zip 7zip p7zip-full
             ;;
         bind)
             printf '%s\n' bind9-dnsutils
@@ -592,7 +738,7 @@ debian_package_names() {
             printf '%s\n' bluez-tools
             ;;
         freerdp)
-            printf '%s\n' freerdp2-x11 freerdp3-x11
+            first_debian_package freerdp3-x11 freerdp3-x11 freerdp2-x11
             ;;
         gst-plugin-pipewire)
             printf '%s\n' gstreamer1.0-pipewire
@@ -680,12 +826,17 @@ read_debian_package_list() {
 }
 
 filter_fedora_packages() {
-    available=()
-    missing=()
+    local result_name=$1
+    shift
+    local -n result=$result_name
+    local missing=()
+    local pkg
+
+    result=()
 
     for pkg in "$@"; do
         if dnf repoquery "$pkg" >/dev/null 2>&1; then
-            available+=("$pkg")
+            result+=("$pkg")
         else
             missing+=("$pkg")
         fi
@@ -695,7 +846,6 @@ filter_fedora_packages() {
         warn "not in configured Fedora repos: ${missing[*]}"
     fi
 
-    printf '%s\n' "${available[@]}"
 }
 
 install_packages() {
@@ -715,61 +865,283 @@ install_packages() {
             mapfile -t package_candidates < <(read_debian_package_list)
             log "Debian package source: $([ -f "$repo_dir/packages.txt" ] && printf packages.txt || printf built-in-list)"
             log "Debian package candidates after mapping: ${#package_candidates[@]}"
-            mapfile -t packages < <(filter_debian_packages "${package_candidates[@]}")
+            packages=()
+            filter_debian_packages packages "${package_candidates[@]}"
             [ "${#packages[@]}" -gt 0 ] || return 0
-            log "Debian packages: ${#packages[@]}"
+            print_array_group "APT packages selected for installation" "${packages[@]}"
 
             install_debian_packages "${packages[@]}"
             ;;
         fedora)
             command -v dnf >/dev/null 2>&1 || die "dnf not found"
-            mapfile -t packages < <(filter_fedora_packages "${fedora_packages[@]}")
+            packages=()
+            filter_fedora_packages packages "${fedora_packages[@]}"
             [ "${#packages[@]}" -gt 0 ] || return 0
-            log "Fedora packages: ${#packages[@]}"
+            print_array_group "DNF packages selected for installation" "${packages[@]}"
 
             args=(install)
             [ "$assume_yes" -eq 1 ] && args+=(-y)
-            as_root dnf "${args[@]}" "${packages[@]}"
+            install_individually_on_failure \
+                "DNF packages" as_root dnf "${args[@]}" -- "${packages[@]}"
             ;;
     esac
 }
 
 install_nerd_font_fallback() {
-    section "Checking fonts"
-    [ "$install_fonts" -eq 1 ] || return 0
+    local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
+    local archive
+    local staging_dir
+    local url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
 
-    if command -v fc-match >/dev/null 2>&1 && fc-match "JetBrainsMono Nerd Font" | grep -qi 'JetBrainsMono.*Nerd'; then
+    section "Checking fonts"
+    if [ "$install_fonts" -ne 1 ]; then
+        log "Nerd Font fallback disabled; skipping"
+        return 0
+    fi
+
+    if command -v fc-list >/dev/null 2>&1 \
+        && fc-list : family | grep -Ei 'JetBrains ?Mono (Nerd Font|NF)' >/dev/null; then
         log "JetBrainsMono Nerd Font already available"
         return 0
     fi
 
     if ! command -v curl >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1; then
-        warn "curl and unzip are required to install JetBrainsMono Nerd Font fallback"
+        warn "curl and unzip are required to download JetBrainsMono Nerd Font"
         return 0
     fi
 
-    font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
-    zip_file="${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.zip"
-    url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
+    if [ "$dry_run" -eq 1 ]; then
+        archive="${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.zip"
+        staging_dir="${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.extract"
+    else
+        if ! archive=$(mktemp "${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.XXXXXX.zip") \
+            || ! staging_dir=$(mktemp -d "${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.XXXXXX"); then
+            warn "failed to create temporary files for JetBrainsMono Nerd Font"
+            [ -z "${archive:-}" ] || rm -f "$archive"
+            return 0
+        fi
+        register_temp "$archive"
+        register_temp "$staging_dir"
+    fi
 
-    log "Installing JetBrainsMono Nerd Font fallback into $font_dir"
-    run mkdir -p "$font_dir"
-    run curl -L --fail -o "$zip_file" "$url"
-    run unzip -o "$zip_file" '*.ttf' -d "$font_dir"
+    log "Downloading JetBrainsMono Nerd Font from the official Nerd Fonts release"
+    if ! run curl --fail --location --retry 3 --output "$archive" "$url"; then
+        warn "failed to download JetBrainsMono Nerd Font; continuing without it"
+        run rm -rf "$staging_dir" "$archive"
+        return 0
+    fi
+
+    if ! run unzip -j -o "$archive" '*.ttf' -d "$staging_dir"; then
+        warn "failed to extract JetBrainsMono Nerd Font; continuing without it"
+        run rm -rf "$staging_dir" "$archive"
+        return 0
+    fi
+
+    if [ "$dry_run" -eq 0 ] && ! find "$staging_dir" -type f -name '*.ttf' -print -quit | grep -q .; then
+        warn "JetBrainsMono Nerd Font archive did not contain TTF files"
+        run rm -rf "$staging_dir" "$archive"
+        return 0
+    fi
+
+    log "Installing JetBrainsMono Nerd Font into $font_dir"
+    if ! run mkdir -p "$(dirname -- "$font_dir")" \
+        || ! run rm -rf "$font_dir" \
+        || ! run mv "$staging_dir" "$font_dir"; then
+        warn "failed to install JetBrainsMono Nerd Font; continuing"
+        run rm -rf "$staging_dir" "$archive"
+        return 0
+    fi
+
+    if ! run rm -f "$archive"; then
+        warn "could not remove the downloaded font archive; exit cleanup will retry"
+    fi
 
     if command -v fc-cache >/dev/null 2>&1; then
-        run fc-cache -f "$font_dir"
+        if ! run fc-cache -f "$font_dir"; then
+            warn "JetBrainsMono Nerd Font was installed, but refreshing the font cache failed"
+        fi
     fi
+
+    log "JetBrainsMono Nerd Font installed"
+}
+
+clone_or_update_theme_repo() {
+    local url=$1
+    local dest=$2
+    local name=$3
+
+    if [ "$dry_run" -eq 1 ]; then
+        log "dry-run: clone or update $name from $url into $dest"
+        return 0
+    fi
+
+    if [ -d "$dest/.git" ]; then
+        if ! run git -C "$dest" pull --ff-only; then
+            warn "failed to update $name; using the existing checkout"
+        fi
+        return 0
+    fi
+
+    if ! run rm -rf "$dest"; then
+        warn "failed to clear the old $name checkout"
+        return 1
+    fi
+    if ! run git clone --depth 1 "$url" "$dest"; then
+        warn "failed to clone $name"
+        return 1
+    fi
+}
+
+install_papirus_theme() {
+    local cache_root="$HOME/.cache/dotfiles-themes"
+    local icons_dir="$HOME/.local/share/icons"
+    local papirus_repo="$cache_root/papirus-icon-theme"
+    local folders_repo="$cache_root/papirus-folders"
+    local folders_bin="$HOME/.local/bin/papirus-folders"
+    local theme
+
+    log "Papirus source: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme"
+    log "Papirus destination: $icons_dir"
+
+    if [ ! -d "$icons_dir/Papirus-Dark" ]; then
+        log "Installing Papirus icon themes into $icons_dir"
+        clone_or_update_theme_repo \
+            "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme.git" \
+            "$papirus_repo" "Papirus icon theme" || return 0
+
+        if ! run mkdir -p "$icons_dir"; then
+            warn "failed to create the user icon directory"
+            return 0
+        fi
+
+        for theme in Papirus Papirus-Dark Papirus-Light; do
+            if [ "$dry_run" -eq 1 ] || [ -d "$papirus_repo/$theme" ]; then
+                if ! run rm -rf "$icons_dir/$theme" \
+                    || ! run cp -a "$papirus_repo/$theme" "$icons_dir/$theme"; then
+                    warn "failed to install the $theme icon theme"
+                    return 0
+                fi
+            fi
+        done
+    else
+        log "Papirus-Dark icon theme already installed locally"
+    fi
+
+    if [ ! -x "$folders_bin" ]; then
+        clone_or_update_theme_repo \
+            "https://github.com/PapirusDevelopmentTeam/papirus-folders.git" \
+            "$folders_repo" "Papirus Folders" || return 0
+
+        if ! run mkdir -p "$(dirname -- "$folders_bin")" \
+            || ! run install -m 0755 "$folders_repo/papirus-folders" "$folders_bin"; then
+            warn "failed to install papirus-folders"
+            return 0
+        fi
+    fi
+
+    log "Applying grey folders to Papirus-Dark"
+    if ! run "$folders_bin" -C grey --theme Papirus-Dark; then
+        warn "failed to apply grey Papirus folders"
+    fi
+
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        if ! run gtk-update-icon-cache -f "$icons_dir/Papirus-Dark"; then
+            warn "failed to refresh the Papirus-Dark icon cache"
+        fi
+    fi
+}
+
+install_gruvbox_gtk_theme() {
+    local cache_root="$HOME/.cache/dotfiles-themes"
+    local themes_dir="$HOME/.local/share/themes"
+    local gruvbox_repo="$cache_root/Gruvbox-GTK-Theme"
+    local theme_dir="$themes_dir/gruvbox-dark-gtk"
+    local generated_theme
+
+    log "Gruvbox source: https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme"
+    log "Gruvbox destination: $themes_dir"
+
+    if [ -d "$theme_dir" ]; then
+        log "Gruvbox GTK theme already installed locally"
+        return 0
+    fi
+
+    clone_or_update_theme_repo \
+        "https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme.git" \
+        "$gruvbox_repo" "Gruvbox GTK theme" || return 0
+
+    log "Installing Gruvbox GTK theme into $themes_dir"
+    if ! run mkdir -p "$themes_dir"; then
+        warn "failed to create the user theme directory"
+        return 0
+    fi
+
+    if [ "$dry_run" -eq 1 ]; then
+        log "dry-run: run the Gruvbox installer for a dark theme named gruvbox-dark-gtk"
+        return 0
+    fi
+
+    if ! (
+        cd "$gruvbox_repo/themes"
+        printf '[%s] run: Gruvbox upstream installer\n' "$(date +%H:%M:%S)"
+        ./install.sh -d "$themes_dir" -n gruvbox-dark-gtk -c dark
+    ); then
+        warn "failed to install the Gruvbox GTK theme; continuing"
+        return 0
+    fi
+
+    if [ ! -d "$theme_dir" ]; then
+        if [ -d "$themes_dir/gruvbox-dark-gtk-Dark" ]; then
+            generated_theme="$themes_dir/gruvbox-dark-gtk-Dark"
+        else
+            generated_theme=$(find "$themes_dir" -mindepth 1 -maxdepth 1 -type d \
+                -name 'gruvbox-dark-gtk*' ! -name '*-hdpi' ! -name '*-xhdpi' \
+                -print -quit)
+        fi
+        if [ -n "$generated_theme" ]; then
+            if ! run ln -s "$(basename -- "$generated_theme")" "$theme_dir"; then
+                warn "failed to create the gruvbox-dark-gtk theme alias"
+            fi
+        else
+            warn "Gruvbox installer did not create the expected theme"
+        fi
+    fi
+}
+
+install_theme_fallbacks() {
+    section "Checking desktop themes"
+    if [ "$install_themes" -ne 1 ]; then
+        log "Desktop theme fallbacks disabled; skipping"
+        return 0
+    fi
+
+    if ! command -v git >/dev/null 2>&1; then
+        warn "git is required to install desktop theme fallbacks"
+        return 0
+    fi
+
+    install_papirus_theme
+    install_gruvbox_gtk_theme
+    log "Desktop theme checks complete"
 }
 
 enable_common_services() {
     section "Enabling services"
-    [ "$enable_services" -eq 1 ] || return 0
-    command -v systemctl >/dev/null 2>&1 || return 0
+    if [ "$enable_services" -ne 1 ]; then
+        log "Service enablement not requested; skipping"
+        return 0
+    fi
+    if ! command -v systemctl >/dev/null 2>&1; then
+        warn "systemctl not found; skipping service enablement"
+        return 0
+    fi
 
     for service in NetworkManager bluetooth; do
         if systemctl list-unit-files "$service.service" 2>/dev/null | grep -q "^$service\\.service"; then
-            as_root systemctl enable --now "$service.service"
+            log "Enabling service: $service.service"
+            if ! as_root systemctl enable --now "$service.service"; then
+                warn "failed to enable service: $service.service"
+            fi
         else
             warn "service not found: $service.service"
         fi
@@ -849,12 +1221,9 @@ deploy_dotfiles() {
         files=$((files + 1))
         deploy_file "$src"
     done < <(
-        find "$repo_dir" -type f \
+        find "$repo_dir" -mindepth 1 -type f \
+            -path "$repo_dir/.*" \
             ! -path "$repo_dir/.git/*" \
-            ! -name 'README' \
-            ! -name 'README.*' \
-            ! -name 'install.sh' \
-            ! -name 'sync-from-home.sh' \
             ! -name '.gitignore' \
             -print0
     )
@@ -866,37 +1235,58 @@ deploy_dotfiles() {
     log "Deployment complete: $files files processed"
 }
 
-warn_if_home_differs() {
-    old_home="/home/nanda-kumudhan"
-    if [ "$HOME" != "$old_home" ] && grep -R "$old_home" "$repo_dir" \
-        --exclude-dir=.git --exclude=install.sh >/dev/null 2>&1; then
-        warn "some dotfiles contain hardcoded paths for $old_home; review them after install"
-    fi
-}
-
 main() {
     setup_logging
 
     family=$(detect_family)
     section "Dotfiles installer"
+    log "Started: $(date '+%Y-%m-%d %H:%M:%S %Z')"
     log "Detected distro family: $family"
     log "Repo: $repo_dir"
+    log "Home: $HOME"
     log "Deploy mode: $mode"
     log "Dry run: $dry_run"
+    log "Install dependencies: $install_deps"
+    log "Install dotfiles: $install_files"
+    log "Install Nerd Font fallback: $install_fonts"
+    log "Install theme fallbacks: $install_themes"
+    log "Enable services: $enable_services"
+    log "Install AUR packages: $install_aur"
     log "Backup root: $backup_root"
 
     if [ "$install_deps" -eq 1 ]; then
         install_packages "$family"
+        log "Package stage complete"
         install_nerd_font_fallback
+        log "Font stage complete"
+        install_theme_fallbacks
+        log "Theme stage complete"
         enable_common_services
+        log "Service stage complete"
+    else
+        log "Skipping packages, fonts, themes, and services"
     fi
 
     if [ "$install_files" -eq 1 ]; then
-        warn_if_home_differs
         deploy_dotfiles
+    else
+        log "Skipping dotfile deployment"
     fi
 
-    log "Done."
+    current_stage="complete"
+    log ""
+    log "==> Installation summary"
+    log "Result: completed"
+    log "Elapsed time: $((SECONDS - install_started_at)) seconds"
+    log "Warnings: $warning_count"
+    if [ "$dry_run" -eq 0 ]; then
+        log "Log file: $log_file"
+    fi
+    if [ "$warning_count" -gt 0 ]; then
+        log "Completed with warnings; review the warning lines above"
+    else
+        log "Completed without warnings"
+    fi
 }
 
 main "$@"

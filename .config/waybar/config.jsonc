@@ -109,14 +109,14 @@
     },
 
     "custom/pomodoro": {
-        "exec": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro",
+        "exec": "$HOME/.config/waybar/scripts/pomodoro",
         "return-type": "json",
         "interval": "once",
         "signal": 8,
         "tooltip": true,
-        "on-click": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro toggle",
-        "on-click-right": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro reset",
-        "on-click-middle": "/home/nanda-kumudhan/.config/waybar/scripts/pomodoro skip"
+        "on-click": "$HOME/.config/waybar/scripts/pomodoro toggle",
+        "on-click-right": "$HOME/.config/waybar/scripts/pomodoro reset",
+        "on-click-middle": "$HOME/.config/waybar/scripts/pomodoro skip"
     },
 
     "custom/launcher": {
@@ -125,7 +125,7 @@
         "interval": "once",
         "tooltip": true,
         "tooltip-format": "Launch apps",
-        "on-click": "/home/nanda-kumudhan/.config/rofi/launcher"
+        "on-click": "$HOME/.config/rofi/launcher"
     },
 
     "custom/power": {
@@ -134,7 +134,7 @@
         "interval": "once",
         "tooltip": true,
         "tooltip-format": "Power menu",
-        "on-click": "/home/nanda-kumudhan/.config/rofi/power"
+        "on-click": "$HOME/.config/rofi/power"
     },
 
     "tray": {
@@ -152,8 +152,8 @@
         "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
         "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\nBattery: {device_battery_percentage}%",
-        "on-click": "/home/nanda-kumudhan/.config/rofi/bluetooth",
-        "on-click-right": "/home/nanda-kumudhan/.config/rofi/bluetooth"
+        "on-click": "$HOME/.config/rofi/bluetooth",
+        "on-click-right": "$HOME/.config/rofi/bluetooth"
     },
 
     "network": {
@@ -165,13 +165,11 @@
         "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
         "tooltip-format-disconnected": "Disconnected",
         "interval": 15,
-        "on-click": "/home/nanda-kumudhan/.config/rofi/network",
-        "on-click-right": "/home/nanda-kumudhan/.config/rofi/network"
+        "on-click": "$HOME/.config/rofi/network",
+        "on-click-right": "$HOME/.config/rofi/network"
     },
 
     "battery": {
-        "bat": "BAT0",
-        "adapter": "ACAD",
         "interval": 60,
         "states": {
             "warning": 30,
@@ -198,7 +196,7 @@
         "max-volume": 100,
         "scroll-step": 1,
         "tooltip-format": "Volume: {volume}%\nNode: {node_name}",
-        "on-click": "/home/nanda-kumudhan/.config/rofi/pipewire-output",
+        "on-click": "$HOME/.config/rofi/pipewire-output",
         "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-click-right": "pavucontrol"
     },
@@ -209,7 +207,7 @@
         "interval": 2,
         "tooltip": true,
         "tooltip-format": "Microphone muted",
-        "on-click": "/home/nanda-kumudhan/.config/rofi/pipewire-input",
+        "on-click": "$HOME/.config/rofi/pipewire-input",
         "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
         "on-click-right": "pavucontrol"
     },

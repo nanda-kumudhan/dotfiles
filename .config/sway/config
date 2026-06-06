@@ -5,20 +5,20 @@ set $mod Mod4
 set $pass_manager keepassxc
 set $term foot
 set $file_manager Thunar
-set $file_menu /home/nanda-kumudhan/.config/rofi/files
-set $network_menu /home/nanda-kumudhan/.config/rofi/network
-set $bluetooth_menu /home/nanda-kumudhan/.config/rofi/bluetooth
-set $clipboard_menu /home/nanda-kumudhan/.config/rofi/clipboard
-set $power_menu /home/nanda-kumudhan/.config/rofi/power
+set $file_menu $HOME/.config/rofi/files
+set $network_menu $HOME/.config/rofi/network
+set $bluetooth_menu $HOME/.config/rofi/bluetooth
+set $clipboard_menu $HOME/.config/rofi/clipboard
+set $power_menu $HOME/.config/rofi/power
 
 # App launchers
-set $launcher /home/nanda-kumudhan/.config/rofi/launcher
-set $lock /home/nanda-kumudhan/.config/sway/scripts/lock
-set $caffeine /home/nanda-kumudhan/.config/sway/scripts/caffeine
-set $clipboard_watch /home/nanda-kumudhan/.config/sway/scripts/clipboard-watch
-set $screenshot /home/nanda-kumudhan/.config/sway/scripts/screenshot
-set $gui_env /home/nanda-kumudhan/.config/sway/scripts/gui-env
-set $wallpaper /home/nanda-kumudhan/Pictures/wallpaper
+set $launcher $HOME/.config/rofi/launcher
+set $lock $HOME/.config/sway/scripts/lock
+set $caffeine $HOME/.config/sway/scripts/caffeine
+set $clipboard_watch $HOME/.config/sway/scripts/clipboard-watch
+set $screenshot $HOME/.config/sway/scripts/screenshot
+set $gui_env $HOME/.config/sway/scripts/gui-env
+set $wallpaper $HOME/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
 set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24
 
@@ -92,7 +92,7 @@ exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
 exec_always sh -c 'command -v mako >/dev/null || exit 0; pkill -x mako 2>/dev/null; mako'
 
 # Automatic split direction
-exec_always sh -c 'pkill -x autotiling 2>/dev/null; exec /usr/sbin/autotiling'
+exec_always sh -c 'command -v autotiling >/dev/null 2>&1 || exit 0; pkill -x autotiling 2>/dev/null; exec autotiling'
 
 # Wallpaper
 output * bg $wallpaper fill
@@ -215,8 +215,8 @@ bindsym $mod+grave scratchpad show
 
 # Audio
 bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-bindsym $mod+XF86AudioMicMute exec /home/nanda-kumudhan/.config/rofi/pipewire-input
-bindsym $mod+XF86AudioMute exec /home/nanda-kumudhan/.config/rofi/pipewire-output
+bindsym $mod+XF86AudioMicMute exec $HOME/.config/rofi/pipewire-input
+bindsym $mod+XF86AudioMute exec $HOME/.config/rofi/pipewire-output
 bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-
 bindsym XF86AudioRaiseVolume exec "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 1%+"
 bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
