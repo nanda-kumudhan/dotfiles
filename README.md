@@ -13,18 +13,10 @@ Run from a fresh Arch Linux system:
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
-The installer reads `packages.txt`, shows what is already installed, asks before installing missing repository and AUR packages, and bootstraps `yay` if needed. Missing visual assets are installed from their official upstream projects: JetBrainsMono Nerd Font under `~/.local/share/fonts`, Papirus with grey folders under `~/.local/share/icons`, and Gruvbox GTK under `~/.local/share/themes`. Omit `-y` for confirmation prompts:
+The tracked `packages.txt` contains the complete package set. The installer uses only `pacman` and an AUR helper, shows what is already installed, asks before installing missing packages, and bootstraps `yay` if needed. Fonts, Papirus icons, Gruvbox GTK/icons, and the Kvantum theme are installed as Arch/AUR packages. After installation, `papirus-folders` applies grey folders to the Papirus themes. Omit `-y` for confirmation prompts:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
-```
-
-Or clone and run locally:
-
-```bash
-git clone https://github.com/nanda-kumudhan/dotfiles.git ~/Github/dotfiles
-cd ~/Github/dotfiles
-./install.sh -y
 ```
 
 Useful options:
@@ -37,7 +29,6 @@ Useful options:
 ./install.sh --enable-services -y
 ./install.sh --aur-helper paru
 ./install.sh --no-aur
-./install.sh --no-themes
 ```
 
 ## Sync
@@ -59,4 +50,4 @@ Check first:
 The installer backs up replaced files under `~/.dotfiles-backup/`.
 Only top-level hidden files and directories from the repository are deployed; package manifests, logs, and installer sources stay inside the clone.
 
-The installer prints each command, its result and duration, stage summaries, and a final warning count. Optional package, font, theme, and service failures are reported and skipped. Failures that prevent cloning, backing up, or deploying dotfiles stop the installer with the stage, line, command, and log path.
+The installer prints each command, its result and duration, stage summaries, and a final warning count. Package and service failures are reported and skipped. Failures that prevent cloning, backing up, or deploying dotfiles stop the installer with the stage, line, command, and log path.

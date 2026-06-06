@@ -10,8 +10,6 @@ log_file=${DOTFILES_LOG_FILE:-"$backup_root/install-$timestamp.log"}
 mode=link
 install_deps=1
 install_files=1
-install_fonts=1
-install_themes=1
 enable_services=0
 assume_yes=0
 dry_run=0
@@ -34,10 +32,8 @@ Supports Arch Linux only.
 Options:
   --link              Symlink files into $HOME. Default.
   --copy              Copy files into $HOME instead of symlinking.
-  --deps-only         Install packages, fonts, and themes only.
+  --deps-only         Install packages and configure installed themes only.
   --files-only        Deploy dotfiles only.
-  --no-fonts          Skip JetBrainsMono Nerd Font fallback install.
-  --no-themes         Skip Papirus and Gruvbox theme fallback installs.
   --no-aur            Skip AUR packages.
   --aur-helper NAME   AUR helper to bootstrap: yay or paru. Default: yay.
   --curated-packages  Use the built-in package list instead of packages.txt.
@@ -257,15 +253,7 @@ while [ "$#" -gt 0 ]; do
             ;;
         --files-only)
             install_deps=0
-            install_fonts=0
-            install_themes=0
             install_files=1
-            ;;
-        --no-fonts)
-            install_fonts=0
-            ;;
-        --no-themes)
-            install_themes=0
             ;;
         --no-aur)
             install_aur=0
@@ -600,242 +588,25 @@ install_packages() {
     install_arch_packages
 }
 
-install_nerd_font_fallback() {
-    local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
-    local archive
-    local staging_dir
-    local url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
-
-    section "Checking fonts"
-    if [ "$install_fonts" -ne 1 ]; then
-        log "Nerd Font fallback disabled; skipping"
-        return 0
-    fi
-
-    if command -v fc-list >/dev/null 2>&1 \
-        && fc-list : family | grep -Ei 'JetBrains ?Mono (Nerd Font|NF)' >/dev/null; then
-        log "JetBrainsMono Nerd Font already available"
-        return 0
-    fi
-
-    if ! command -v curl >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1; then
-        warn "curl and unzip are required to download JetBrainsMono Nerd Font"
-        return 0
-    fi
-
-    if [ "$dry_run" -eq 1 ]; then
-        archive="${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.zip"
-        staging_dir="${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.extract"
-    else
-        if ! archive=$(mktemp "${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.XXXXXX.zip") \
-            || ! staging_dir=$(mktemp -d "${TMPDIR:-/tmp}/JetBrainsMonoNerdFont.XXXXXX"); then
-            warn "failed to create temporary files for JetBrainsMono Nerd Font"
-            [ -z "${archive:-}" ] || rm -f "$archive"
-            return 0
-        fi
-        register_temp "$archive"
-        register_temp "$staging_dir"
-    fi
-
-    log "Downloading JetBrainsMono Nerd Font from the official Nerd Fonts release"
-    if ! run curl --fail --location --retry 3 --output "$archive" "$url"; then
-        warn "failed to download JetBrainsMono Nerd Font; continuing without it"
-        run rm -rf "$staging_dir" "$archive"
-        return 0
-    fi
-
-    if ! run unzip -j -o "$archive" '*.ttf' -d "$staging_dir"; then
-        warn "failed to extract JetBrainsMono Nerd Font; continuing without it"
-        run rm -rf "$staging_dir" "$archive"
-        return 0
-    fi
-
-    if [ "$dry_run" -eq 0 ] && ! find "$staging_dir" -type f -name '*.ttf' -print -quit | grep -q .; then
-        warn "JetBrainsMono Nerd Font archive did not contain TTF files"
-        run rm -rf "$staging_dir" "$archive"
-        return 0
-    fi
-
-    log "Installing JetBrainsMono Nerd Font into $font_dir"
-    if ! run mkdir -p "$(dirname -- "$font_dir")" \
-        || ! run rm -rf "$font_dir" \
-        || ! run mv "$staging_dir" "$font_dir"; then
-        warn "failed to install JetBrainsMono Nerd Font; continuing"
-        run rm -rf "$staging_dir" "$archive"
-        return 0
-    fi
-
-    if ! run rm -f "$archive"; then
-        warn "could not remove the downloaded font archive; exit cleanup will retry"
-    fi
-
-    if command -v fc-cache >/dev/null 2>&1; then
-        if ! run fc-cache -f "$font_dir"; then
-            warn "JetBrainsMono Nerd Font was installed, but refreshing the font cache failed"
-        fi
-    fi
-
-    log "JetBrainsMono Nerd Font installed"
-}
-
-clone_or_update_theme_repo() {
-    local url=$1
-    local dest=$2
-    local name=$3
-
-    if [ "$dry_run" -eq 1 ]; then
-        log "dry-run: clone or update $name from $url into $dest"
-        return 0
-    fi
-
-    if [ -d "$dest/.git" ]; then
-        if ! run git -C "$dest" pull --ff-only; then
-            warn "failed to update $name; using the existing checkout"
-        fi
-        return 0
-    fi
-
-    if ! run rm -rf "$dest"; then
-        warn "failed to clear the old $name checkout"
-        return 1
-    fi
-    if ! run git clone --depth 1 "$url" "$dest"; then
-        warn "failed to clone $name"
-        return 1
-    fi
-}
-
-install_papirus_theme() {
-    local cache_root="$HOME/.cache/dotfiles-themes"
-    local icons_dir="$HOME/.local/share/icons"
-    local papirus_repo="$cache_root/papirus-icon-theme"
-    local folders_repo="$cache_root/papirus-folders"
-    local folders_bin="$HOME/.local/bin/papirus-folders"
+configure_papirus_folders() {
     local theme
 
-    log "Papirus source: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme"
-    log "Papirus destination: $icons_dir"
+    section "Configuring Papirus folders"
+    if ! command -v papirus-folders >/dev/null 2>&1; then
+        warn "papirus-folders is not installed; skipping grey folder configuration"
+        return 0
+    fi
 
-    if [ ! -d "$icons_dir/Papirus-Dark" ]; then
-        log "Installing Papirus icon themes into $icons_dir"
-        clone_or_update_theme_repo \
-            "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme.git" \
-            "$papirus_repo" "Papirus icon theme" || return 0
-
-        if ! run mkdir -p "$icons_dir"; then
-            warn "failed to create the user icon directory"
-            return 0
+    for theme in Papirus Papirus-Dark Papirus-Light; do
+        if [ "$dry_run" -eq 0 ] && [ ! -d "/usr/share/icons/$theme" ]; then
+            warn "$theme is not installed; skipping grey folder configuration"
+            continue
         fi
-
-        for theme in Papirus Papirus-Dark Papirus-Light; do
-            if [ "$dry_run" -eq 1 ] || [ -d "$papirus_repo/$theme" ]; then
-                if ! run rm -rf "$icons_dir/$theme" \
-                    || ! run cp -a "$papirus_repo/$theme" "$icons_dir/$theme"; then
-                    warn "failed to install the $theme icon theme"
-                    return 0
-                fi
-            fi
-        done
-    else
-        log "Papirus-Dark icon theme already installed locally"
-    fi
-
-    if [ ! -x "$folders_bin" ]; then
-        clone_or_update_theme_repo \
-            "https://github.com/PapirusDevelopmentTeam/papirus-folders.git" \
-            "$folders_repo" "Papirus Folders" || return 0
-
-        if ! run mkdir -p "$(dirname -- "$folders_bin")" \
-            || ! run install -m 0755 "$folders_repo/papirus-folders" "$folders_bin"; then
-            warn "failed to install papirus-folders"
-            return 0
+        log "Applying grey folders to $theme"
+        if ! run papirus-folders -C grey --theme "$theme" --update-caches; then
+            warn "failed to apply grey folders to $theme"
         fi
-    fi
-
-    log "Applying grey folders to Papirus-Dark"
-    if ! run "$folders_bin" -C grey --theme Papirus-Dark; then
-        warn "failed to apply grey Papirus folders"
-    fi
-
-    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
-        if ! run gtk-update-icon-cache -f "$icons_dir/Papirus-Dark"; then
-            warn "failed to refresh the Papirus-Dark icon cache"
-        fi
-    fi
-}
-
-install_gruvbox_gtk_theme() {
-    local cache_root="$HOME/.cache/dotfiles-themes"
-    local themes_dir="$HOME/.local/share/themes"
-    local gruvbox_repo="$cache_root/Gruvbox-GTK-Theme"
-    local theme_dir="$themes_dir/gruvbox-dark-gtk"
-    local generated_theme
-
-    log "Gruvbox source: https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme"
-    log "Gruvbox destination: $themes_dir"
-
-    if [ -d "$theme_dir" ]; then
-        log "Gruvbox GTK theme already installed locally"
-        return 0
-    fi
-
-    clone_or_update_theme_repo \
-        "https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme.git" \
-        "$gruvbox_repo" "Gruvbox GTK theme" || return 0
-
-    log "Installing Gruvbox GTK theme into $themes_dir"
-    if ! run mkdir -p "$themes_dir"; then
-        warn "failed to create the user theme directory"
-        return 0
-    fi
-
-    if [ "$dry_run" -eq 1 ]; then
-        log "dry-run: run the Gruvbox installer for a dark theme named gruvbox-dark-gtk"
-        return 0
-    fi
-
-    if ! (
-        cd "$gruvbox_repo/themes"
-        printf '[%s] run: Gruvbox upstream installer\n' "$(date +%H:%M:%S)"
-        ./install.sh -d "$themes_dir" -n gruvbox-dark-gtk -c dark
-    ); then
-        warn "failed to install the Gruvbox GTK theme; continuing"
-        return 0
-    fi
-
-    if [ ! -d "$theme_dir" ]; then
-        if [ -d "$themes_dir/gruvbox-dark-gtk-Dark" ]; then
-            generated_theme="$themes_dir/gruvbox-dark-gtk-Dark"
-        else
-            generated_theme=$(find "$themes_dir" -mindepth 1 -maxdepth 1 -type d \
-                -name 'gruvbox-dark-gtk*' ! -name '*-hdpi' ! -name '*-xhdpi' \
-                -print -quit)
-        fi
-        if [ -n "$generated_theme" ]; then
-            if ! run ln -s "$(basename -- "$generated_theme")" "$theme_dir"; then
-                warn "failed to create the gruvbox-dark-gtk theme alias"
-            fi
-        else
-            warn "Gruvbox installer did not create the expected theme"
-        fi
-    fi
-}
-
-install_theme_fallbacks() {
-    section "Checking desktop themes"
-    if [ "$install_themes" -ne 1 ]; then
-        log "Desktop theme fallbacks disabled; skipping"
-        return 0
-    fi
-
-    if ! command -v git >/dev/null 2>&1; then
-        warn "git is required to install desktop theme fallbacks"
-        return 0
-    fi
-
-    install_papirus_theme
-    install_gruvbox_gtk_theme
-    log "Desktop theme checks complete"
+    done
 }
 
 enable_common_services() {
@@ -961,8 +732,6 @@ main() {
     log "Dry run: $dry_run"
     log "Install dependencies: $install_deps"
     log "Install dotfiles: $install_files"
-    log "Install Nerd Font fallback: $install_fonts"
-    log "Install theme fallbacks: $install_themes"
     log "Enable services: $enable_services"
     log "Install AUR packages: $install_aur"
     log "Backup root: $backup_root"
@@ -970,14 +739,12 @@ main() {
     if [ "$install_deps" -eq 1 ]; then
         install_packages
         log "Package stage complete"
-        install_nerd_font_fallback
-        log "Font stage complete"
-        install_theme_fallbacks
-        log "Theme stage complete"
+        configure_papirus_folders
+        log "Papirus folder configuration complete"
         enable_common_services
         log "Service stage complete"
     else
-        log "Skipping packages, fonts, themes, and services"
+        log "Skipping packages, theme configuration, and services"
     fi
 
     if [ "$install_files" -eq 1 ]; then
