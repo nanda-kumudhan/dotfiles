@@ -72,7 +72,7 @@ client.urgent #ffffff #111111 $m_text #ffffff #ffffff
 exec udiskie --no-tray --notify
 
 # --- Session Services ---
-exec $gui_env /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec $gui_env $HOME/.local/bin/start-polkit-agent
 
 # XDG desktop portal, if installed. Common package paths differ by distro.
 exec sh -c 'for p in xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr /usr/libexec/xdg-desktop-portal-wlr; do if command -v "$p" >/dev/null 2>&1 || [ -x "$p" ]; then exec "$p"; fi; done; exit 0'

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# The polkit-gnome agent is installed in different locations across distros.
+for agent in \
+    /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 \
+    /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 \
+    /usr/libexec/polkit-gnome-authentication-agent-1
+do
+    if [ -x "$agent" ]; then
+        exec "$agent"
+    fi
+done
+
+if command -v polkit-gnome-authentication-agent-1 >/dev/null 2>&1; then
+    exec polkit-gnome-authentication-agent-1
+fi
+
+printf 'warning: no polkit authentication agent executable found\n' >&2
+exit 0

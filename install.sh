@@ -114,9 +114,12 @@ confirm() {
         return 0
     fi
 
-    if [ -r /dev/tty ]; then
-        printf '%s [y/N] ' "$prompt" > /dev/tty
-        read -r answer < /dev/tty
+    answer=
+    if [ -r /dev/tty ] && { printf '%s [y/N] ' "$prompt" > /dev/tty; } 2>/dev/null; then
+        if ! read -r answer < /dev/tty 2>/dev/null; then
+            warn "cannot read confirmation from terminal: $prompt"
+            return 1
+        fi
     else
         warn "cannot prompt without a terminal: $prompt"
         return 1
@@ -529,6 +532,32 @@ filter_debian_packages() {
     printf '%s\n' "${available[@]}"
 }
 
+install_debian_packages() {
+    local args=(install)
+    local failed=()
+    local pkg
+
+    [ "$assume_yes" -eq 1 ] && args+=(-y)
+
+    if as_root apt-get "${args[@]}" "$@"; then
+        return 0
+    fi
+
+    warn "APT batch install failed; retrying packages individually"
+    for pkg in "$@"; do
+        if ! as_root apt-get "${args[@]}" "$pkg"; then
+            failed+=("$pkg")
+        fi
+    done
+
+    if [ "${#failed[@]}" -gt 0 ]; then
+        warn "APT could not install ${#failed[@]} package(s): ${failed[*]}"
+        warn "continuing with the rest of the installer"
+    fi
+
+    return 0
+}
+
 read_package_list() {
     if [ -f "$repo_dir/packages.txt" ]; then
         sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$repo_dir/packages.txt" | sort -u
@@ -679,7 +708,9 @@ install_packages() {
             ;;
         debian)
             command -v apt-get >/dev/null 2>&1 || die "apt-get not found"
-            as_root apt-get update
+            if ! as_root apt-get update; then
+                warn "APT package index update failed; continuing with the existing package index"
+            fi
 
             mapfile -t package_candidates < <(read_debian_package_list)
             log "Debian package source: $([ -f "$repo_dir/packages.txt" ] && printf packages.txt || printf built-in-list)"
@@ -688,9 +719,7 @@ install_packages() {
             [ "${#packages[@]}" -gt 0 ] || return 0
             log "Debian packages: ${#packages[@]}"
 
-            args=(install)
-            [ "$assume_yes" -eq 1 ] && args+=(-y)
-            as_root apt-get "${args[@]}" "${packages[@]}"
+            install_debian_packages "${packages[@]}"
             ;;
         fedora)
             command -v dnf >/dev/null 2>&1 || die "dnf not found"
