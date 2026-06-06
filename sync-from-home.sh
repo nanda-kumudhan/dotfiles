@@ -36,6 +36,8 @@ files=(
     .config/htop/htoprc
     .config/kanshi/config
     .config/mako/config
+    .config/mpv/input.conf
+    .config/mpv/mpv.conf
     .config/nvim/colors/sway-rice.lua
     .config/nvim/init.lua
     .config/nvim/lazy-lock.json
