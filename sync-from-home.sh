@@ -72,7 +72,8 @@ usage() {
 Usage: ./sync-from-home.sh [options]
 
 Copies the selected live dotfiles from $HOME back into this repo.
-It also refreshes packages.txt from the current system.
+It also refreshes packages.txt with explicitly installed Arch packages.
+Supports Arch Linux only.
 It never commits or pushes.
 
 Options:
@@ -191,70 +192,35 @@ sync_file() {
     log "synced: $rel"
 }
 
-detect_package_manager() {
-    if command -v pacman >/dev/null 2>&1; then
-        printf 'pacman'
-    elif command -v apt-mark >/dev/null 2>&1; then
-        printf 'apt'
-    elif command -v dnf >/dev/null 2>&1; then
-        printf 'dnf'
-    else
-        return 1
-    fi
-}
-
-write_package_list() {
-    manager=$1
-    output=$2
-
-    case "$manager" in
-        pacman)
-            pacman -Qqe | sort -u > "$output"
-            ;;
-        apt)
-            apt-mark showmanual | sort -u > "$output"
-            ;;
-        dnf)
-            dnf repoquery --userinstalled --qf '%{name}' | sort -u > "$output"
-            ;;
-        *)
-            return 1
-            ;;
-    esac
-}
-
 sync_package_list() {
     dest="$repo_dir/packages.txt"
 
-    if ! manager=$(detect_package_manager); then
-        warn "no supported package manager found for packages.txt"
-        return 0
-    fi
+    command -v pacman >/dev/null 2>&1 || die "pacman not found; this sync script supports Arch Linux only"
 
     tmp=$(mktemp)
-    write_package_list "$manager" "$tmp"
+    pacman -Qqe | sort -u > "$tmp"
 
     if [ -f "$dest" ] && cmp -s "$tmp" "$dest"; then
-        log "current: packages.txt ($manager)"
+        log "current: packages.txt (pacman)"
         rm -f "$tmp"
         return 0
     fi
 
     if [ "$check_only" -eq 1 ]; then
-        log "differs: packages.txt ($manager)"
+        log "differs: packages.txt (pacman)"
         rm -f "$tmp"
         return 0
     fi
 
     if [ "$dry_run" -eq 1 ]; then
-        log "dry-run: refresh packages.txt from $manager"
+        log "dry-run: refresh packages.txt from pacman"
         rm -f "$tmp"
         return 0
     fi
 
     cp -- "$tmp" "$dest"
     rm -f "$tmp"
-    log "synced: packages.txt ($manager)"
+    log "synced: packages.txt (pacman)"
 }
 
 main() {

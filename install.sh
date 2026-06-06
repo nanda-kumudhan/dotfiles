@@ -29,6 +29,7 @@ usage() {
 Usage: ./install.sh [options]
 
 Installs dependencies and deploys this dotfiles repo into $HOME with backups.
+Supports Arch Linux only.
 
 Options:
   --link              Symlink files into $HOME. Default.
@@ -37,9 +38,9 @@ Options:
   --files-only        Deploy dotfiles only.
   --no-fonts          Skip JetBrainsMono Nerd Font fallback install.
   --no-themes         Skip Papirus and Gruvbox theme fallback installs.
-  --no-aur            Skip AUR packages on Arch.
-  --aur-helper NAME   AUR helper to bootstrap on Arch: yay or paru. Default: yay.
-  --curated-packages  On Arch, use the built-in package list instead of packages.txt.
+  --no-aur            Skip AUR packages.
+  --aur-helper NAME   AUR helper to bootstrap: yay or paru. Default: yay.
+  --curated-packages  Use the built-in package list instead of packages.txt.
   --enable-services   Enable NetworkManager and bluetooth services if present.
   --log-file PATH     Write installer log to PATH.
   -y, --yes           Pass yes flags to package manager.
@@ -49,7 +50,7 @@ Options:
 Environment:
   DOTFILES_BACKUP_ROOT    Backup directory root. Default: ~/.dotfiles-backup
   DOTFILES_LOG_FILE       Installer log path. Default: ~/.dotfiles-backup/install-<timestamp>.log
-  DOTFILES_AUR_HELPER     AUR helper to use on Arch. Default: yay
+  DOTFILES_AUR_HELPER     AUR helper to use. Default: yay
 EOF
 }
 
@@ -311,7 +312,7 @@ case "$aur_helper" in
         ;;
 esac
 
-detect_family() {
+require_arch() {
     [ -r /etc/os-release ] || die "cannot detect distro: /etc/os-release missing"
 
     # shellcheck disable=SC1091
@@ -322,18 +323,13 @@ detect_family() {
 
     case " $distro_words " in
         *" arch "*|*" endeavouros "*|*" manjaro "*)
-            printf 'arch'
-            ;;
-        *" debian "*|*" ubuntu "*|*" linuxmint "*|*" pop "*)
-            printf 'debian'
-            ;;
-        *" fedora "*|*" rhel "*|*" centos "*)
-            printf 'fedora'
             ;;
         *)
-            die "unsupported distro family: ${PRETTY_NAME:-unknown}. Supported: Arch, Debian/Ubuntu, and Fedora family"
+            die "unsupported system: ${PRETTY_NAME:-unknown}. These dotfiles support Arch Linux only"
             ;;
     esac
+
+    command -v pacman >/dev/null 2>&1 || die "pacman not found"
 }
 
 arch_packages=(
@@ -345,30 +341,6 @@ arch_packages=(
     fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
     libnotify jq git curl unzip xdg-utils openssh pciutils
     ttf-jetbrains-mono-nerd otf-font-awesome noto-fonts-emoji papirus-icon-theme
-)
-
-debian_packages=(
-    sway swayidle swaylock waybar foot rofi mako-notifier kanshi autotiling
-    xdg-desktop-portal xdg-desktop-portal-wlr policykit-1-gnome polkitd udiskie
-    network-manager bluez bluetooth blueman
-    pipewire pipewire-audio pipewire-pulse wireplumber pavucontrol
-    brightnessctl playerctl grim slurp wl-clipboard cliphist
-    fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
-    libnotify-bin jq git curl unzip xdg-utils openssh-client dbus-user-session
-    fonts-jetbrains-mono fonts-font-awesome fonts-noto-color-emoji papirus-icon-theme
-    sassc gtk2-engines-murrine gnome-themes-extra
-)
-
-fedora_packages=(
-    sway swayidle swaylock waybar foot rofi mako kanshi
-    xdg-desktop-portal xdg-desktop-portal-wlr polkit-gnome udiskie
-    NetworkManager bluez blueman
-    pipewire pipewire-alsa pipewire-pulseaudio wireplumber pavucontrol
-    brightnessctl playerctl grim slurp wl-clipboard cliphist
-    fastfetch starship thunar keepassxc wdisplays htop mpv gnome-disk-utility
-    libnotify jq git curl unzip xdg-utils openssh-clients
-    jetbrains-mono-fonts fontawesome-fonts-all google-noto-emoji-fonts papirus-icon-theme
-    sassc gtk-murrine-engine gnome-themes-extra
 )
 
 arch_driver_packages() {
@@ -407,25 +379,6 @@ arch_driver_packages() {
     fi
 
     printf '%s\n' "${packages[@]}"
-}
-
-filter_arch_packages() {
-    available=()
-    missing=()
-
-    for pkg in "$@"; do
-        if pacman -Si "$pkg" >/dev/null 2>&1; then
-            available+=("$pkg")
-        else
-            missing+=("$pkg")
-        fi
-    done
-
-    if [ "${#missing[@]}" -gt 0 ]; then
-        warn "not in configured Arch repos: ${missing[*]}"
-    fi
-
-    printf '%s\n' "${available[@]}"
 }
 
 read_arch_package_list() {
@@ -507,22 +460,6 @@ print_package_group() {
     count=$(wc -l < "$file")
     log "$title ($count):"
     sed 's/^/  - /' "$file"
-}
-
-print_array_group() {
-    local title=$1
-    shift
-    local item
-
-    if [ "$#" -eq 0 ]; then
-        log "$title: none"
-        return 0
-    fi
-
-    log "$title ($#):"
-    for item in "$@"; do
-        printf '  - %s\n' "$item"
-    done
 }
 
 install_arch_base_tools() {
@@ -658,233 +595,9 @@ install_arch_packages() {
     rm -f "$repo_tmp" "$aur_tmp" "$repo_installed_tmp" "$repo_missing_tmp" "$aur_installed_tmp" "$aur_missing_tmp"
 }
 
-filter_debian_packages() {
-    local result_name=$1
-    shift
-    local -n result=$result_name
-    local missing=()
-    local pkg
-
-    result=()
-
-    for pkg in "$@"; do
-        if apt-cache show "$pkg" >/dev/null 2>&1; then
-            result+=("$pkg")
-        else
-            missing+=("$pkg")
-        fi
-    done
-
-    if [ "${#missing[@]}" -gt 0 ]; then
-        warn "not in configured APT repos: ${missing[*]}"
-    fi
-
-}
-
-install_debian_packages() {
-    local args=(install)
-
-    [ "$assume_yes" -eq 1 ] && args+=(-y)
-    install_individually_on_failure \
-        "APT packages" as_root apt-get "${args[@]}" -- "$@"
-}
-
-read_package_list() {
-    if [ -f "$repo_dir/packages.txt" ]; then
-        sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$repo_dir/packages.txt" | sort -u
-    else
-        return 1
-    fi
-}
-
-first_debian_package() {
-    local fallback=$1
-    local pkg
-
-    for pkg in "$@"; do
-        if apt-cache show "$pkg" >/dev/null 2>&1; then
-            printf '%s\n' "$pkg"
-            return 0
-        fi
-    done
-
-    # Let the normal availability filter report the missing package.
-    printf '%s\n' "$fallback"
-}
-
-debian_package_names() {
-    pkg=$1
-
-    case "$pkg" in
-        android-studio|android-tools|arduino-cli|arduino-ide-bin)
-            return 0
-            ;;
-        base|base-devel|efibootmgr|ex-vi-compat|greetd-tuigreet|intel-ucode)
-            return 0
-            ;;
-        linux|linux-firmware|linux-lts|pacman-contrib|paru*|yay*|sbctl|systemd-ukify|zram-generator)
-            return 0
-            ;;
-        *-bin|*-git|*-debug)
-            return 0
-            ;;
-        7zip)
-            first_debian_package 7zip 7zip p7zip-full
-            ;;
-        bind)
-            printf '%s\n' bind9-dnsutils
-            ;;
-        bluez-utils)
-            printf '%s\n' bluez-tools
-            ;;
-        freerdp)
-            first_debian_package freerdp3-x11 freerdp3-x11 freerdp2-x11
-            ;;
-        gst-plugin-pipewire)
-            printf '%s\n' gstreamer1.0-pipewire
-            ;;
-        kvantum|kvantum-qt5)
-            printf '%s\n' qt5-style-kvantum
-            ;;
-        libpulse)
-            printf '%s\n' libpulse0
-            ;;
-        libreoffice-fresh)
-            printf '%s\n' libreoffice
-            ;;
-        mako)
-            printf '%s\n' mako-notifier
-            ;;
-        man-db)
-            printf '%s\n' man-db
-            ;;
-        networkmanager)
-            printf '%s\n' network-manager
-            ;;
-        networkmanager-openconnect)
-            printf '%s\n' network-manager-openconnect
-            ;;
-        networkmanager-openvpn)
-            printf '%s\n' network-manager-openvpn
-            ;;
-        noto-fonts)
-            printf '%s\n' fonts-noto
-            ;;
-        noto-fonts-emoji)
-            printf '%s\n' fonts-noto-color-emoji
-            ;;
-        openssh)
-            printf '%s\n' openssh-client
-            ;;
-        pipewire-alsa)
-            printf '%s\n' pipewire-alsa
-            ;;
-        pipewire-jack)
-            printf '%s\n' pipewire-jack
-            ;;
-        polkit-gnome)
-            printf '%s\n' policykit-1-gnome
-            ;;
-        qemu-desktop)
-            printf '%s\n' qemu-system qemu-utils
-            ;;
-        sof-firmware)
-            printf '%s\n' firmware-sof-signed
-            ;;
-        texlive-fontsrecommended)
-            printf '%s\n' texlive-fonts-recommended
-            ;;
-        texlive-latexextra)
-            printf '%s\n' texlive-latex-extra
-            ;;
-        ttf-jetbrains-mono|ttf-jetbrains-mono-nerd)
-            printf '%s\n' fonts-jetbrains-mono
-            ;;
-        vulkan-intel)
-            printf '%s\n' mesa-vulkan-drivers
-            ;;
-        xorg-xwayland)
-            printf '%s\n' xwayland
-            ;;
-        zathura-pdf-poppler)
-            printf '%s\n' zathura-pdf-poppler
-            ;;
-        *)
-            printf '%s\n' "$pkg"
-            ;;
-    esac
-}
-
-read_debian_package_list() {
-    if read_package_list >/dev/null 2>&1; then
-        while IFS= read -r pkg; do
-            debian_package_names "$pkg"
-        done < <(read_package_list)
-    else
-        printf '%s\n' "${debian_packages[@]}"
-    fi | sort -u
-}
-
-filter_fedora_packages() {
-    local result_name=$1
-    shift
-    local -n result=$result_name
-    local missing=()
-    local pkg
-
-    result=()
-
-    for pkg in "$@"; do
-        if dnf repoquery "$pkg" >/dev/null 2>&1; then
-            result+=("$pkg")
-        else
-            missing+=("$pkg")
-        fi
-    done
-
-    if [ "${#missing[@]}" -gt 0 ]; then
-        warn "not in configured Fedora repos: ${missing[*]}"
-    fi
-
-}
-
 install_packages() {
-    family=$1
     section "Installing packages"
-
-    case "$family" in
-        arch)
-            install_arch_packages
-            ;;
-        debian)
-            command -v apt-get >/dev/null 2>&1 || die "apt-get not found"
-            if ! as_root apt-get update; then
-                warn "APT package index update failed; continuing with the existing package index"
-            fi
-
-            mapfile -t package_candidates < <(read_debian_package_list)
-            log "Debian package source: $([ -f "$repo_dir/packages.txt" ] && printf packages.txt || printf built-in-list)"
-            log "Debian package candidates after mapping: ${#package_candidates[@]}"
-            packages=()
-            filter_debian_packages packages "${package_candidates[@]}"
-            [ "${#packages[@]}" -gt 0 ] || return 0
-            print_array_group "APT packages selected for installation" "${packages[@]}"
-
-            install_debian_packages "${packages[@]}"
-            ;;
-        fedora)
-            command -v dnf >/dev/null 2>&1 || die "dnf not found"
-            packages=()
-            filter_fedora_packages packages "${fedora_packages[@]}"
-            [ "${#packages[@]}" -gt 0 ] || return 0
-            print_array_group "DNF packages selected for installation" "${packages[@]}"
-
-            args=(install)
-            [ "$assume_yes" -eq 1 ] && args+=(-y)
-            install_individually_on_failure \
-                "DNF packages" as_root dnf "${args[@]}" -- "${packages[@]}"
-            ;;
-    esac
+    install_arch_packages
 }
 
 install_nerd_font_fallback() {
@@ -1238,10 +951,10 @@ deploy_dotfiles() {
 main() {
     setup_logging
 
-    family=$(detect_family)
+    require_arch
     section "Dotfiles installer"
     log "Started: $(date '+%Y-%m-%d %H:%M:%S %Z')"
-    log "Detected distro family: $family"
+    log "Platform: Arch Linux"
     log "Repo: $repo_dir"
     log "Home: $HOME"
     log "Deploy mode: $mode"
@@ -1255,7 +968,7 @@ main() {
     log "Backup root: $backup_root"
 
     if [ "$install_deps" -eq 1 ]; then
-        install_packages "$family"
+        install_packages
         log "Package stage complete"
         install_nerd_font_fallback
         log "Font stage complete"

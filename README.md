@@ -2,15 +2,18 @@
 
 Personal Sway, Waybar, Rofi, GTK/Kvantum Gruvbox, Starship, Fastfetch, Foot, and shell config.
 
+> [!IMPORTANT]
+> These dotfiles support Arch Linux only. The installer requires `pacman` and may install packages from the AUR.
+
 ## Install
 
-Run from a fresh Arch, Debian/Ubuntu, or Fedora-family system:
+Run from a fresh Arch Linux system:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
-On Arch, this reads `packages.txt`, shows what is already installed, asks before installing missing repo/AUR packages, and bootstraps `yay` if needed. On Debian/Ubuntu, it maps known Arch package names to APT package names and skips packages that are unavailable in the configured repositories, such as Android Studio, Arduino IDE, and AUR-only themes. If an APT batch install fails, the installer retries packages individually, reports any failures, and continues deploying the dotfiles. Missing visual assets are installed from their official upstream projects: JetBrainsMono Nerd Font under `~/.local/share/fonts`, Papirus with grey folders under `~/.local/share/icons`, and Gruvbox GTK under `~/.local/share/themes`. Omit `-y` for confirmation prompts:
+The installer reads `packages.txt`, shows what is already installed, asks before installing missing repository and AUR packages, and bootstraps `yay` if needed. Missing visual assets are installed from their official upstream projects: JetBrainsMono Nerd Font under `~/.local/share/fonts`, Papirus with grey folders under `~/.local/share/icons`, and Gruvbox GTK under `~/.local/share/themes`. Omit `-y` for confirmation prompts:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
@@ -45,7 +48,7 @@ Copy selected live dotfiles back into this repo:
 ./sync-from-home.sh
 ```
 
-This also refreshes `packages.txt` from the current system. Arch uses `pacman -Qqe`; Debian/Ubuntu and Fedora use their native package tools.
+This also refreshes `packages.txt` from `pacman -Qqe`.
 
 Check first:
 

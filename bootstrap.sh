@@ -9,10 +9,6 @@ log() {
     printf '[bootstrap] %s\n' "$*"
 }
 
-warn() {
-    printf '[bootstrap] warning: %s\n' "$*" >&2
-}
-
 die() {
     printf '[bootstrap] error: %s\n' "$*" >&2
     exit 1
@@ -44,40 +40,30 @@ as_root() {
 
 install_bootstrap_deps() {
     bootstrap_step="checking bootstrap dependencies"
-    if command -v git >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
-        log "Required tools already available: git and curl"
-        return 0
-    fi
-
     [ -r /etc/os-release ] || {
         die "cannot detect distro: /etc/os-release missing"
     }
     . /etc/os-release
     words=" ${ID:-} ${ID_LIKE:-} "
     log "Detected system: ${PRETTY_NAME:-unknown}"
-    log "Installing bootstrap dependencies"
 
     case "$words" in
         *" arch "*|*" endeavouros "*|*" manjaro "*)
-            log "Using pacman to install git and curl"
-            as_root pacman -S --needed --noconfirm git curl
-            ;;
-        *" debian "*|*" ubuntu "*|*" linuxmint "*|*" pop "*)
-            log "Refreshing APT package indexes"
-            if ! as_root apt-get update; then
-                warn "APT package index refresh failed; trying the existing package index"
-            fi
-            log "Using APT to install git and curl"
-            as_root apt-get install -y git curl
-            ;;
-        *" fedora "*|*" rhel "*|*" centos "*)
-            log "Using DNF to install git and curl"
-            as_root dnf install -y git curl
             ;;
         *)
-            die "unsupported distro family: ${PRETTY_NAME:-unknown}"
+            die "unsupported system: ${PRETTY_NAME:-unknown}. These dotfiles support Arch Linux only"
             ;;
     esac
+
+    command -v pacman >/dev/null 2>&1 || die "pacman not found"
+
+    if command -v git >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
+        log "Required tools already available: git and curl"
+        return 0
+    fi
+
+    log "Using pacman to install git and curl"
+    as_root pacman -S --needed --noconfirm git curl
 }
 
 log "Dotfiles bootstrap starting"
