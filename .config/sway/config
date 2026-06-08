@@ -8,7 +8,6 @@ set $file_manager Thunar
 set $file_menu $HOME/.config/rofi/files
 set $network_menu $HOME/.config/rofi/network
 set $bluetooth_menu $HOME/.config/rofi/bluetooth
-set $clipboard_menu $HOME/.config/rofi/clipboard
 set $power_menu $HOME/.config/rofi/power
 set $display_menu $HOME/.config/rofi/displays
 
@@ -16,7 +15,6 @@ set $display_menu $HOME/.config/rofi/displays
 set $launcher $HOME/.config/rofi/launcher
 set $lock $HOME/.config/sway/scripts/lock
 set $caffeine $HOME/.config/sway/scripts/caffeine
-set $clipboard_watch $HOME/.config/sway/scripts/clipboard-watch
 set $screenshot $HOME/.config/sway/scripts/screenshot
 set $gui_env $HOME/.config/sway/scripts/gui-env
 set $wallpaper $HOME/Pictures/wallpaper
@@ -101,9 +99,6 @@ output * bg $wallpaper fill
 # Output profiles; no-op until kanshi is installed.
 exec_always sh -c 'command -v kanshi >/dev/null 2>&1 || exit 0; pkill -x kanshi 2>/dev/null; exec kanshi'
 
-# Clipboard history; no-op until cliphist and wl-clipboard are installed.
-exec_always $clipboard_watch
-
 # --- Input ---
 seat * xcursor_theme capitaine-cursors 24
 input * xkb_layout gb
@@ -133,7 +128,6 @@ bindsym Ctrl+Mod1+t exec $term
 bindsym $mod+e exec $file_menu
 bindsym $mod+Shift+e exec $gui_env $file_manager
 bindsym $mod+space exec $launcher
-bindsym $mod+y exec $clipboard_menu
 bindsym $mod+q kill
 bindsym $mod+l exec $lock
 bindsym $mod+Shift+l exec $caffeine toggle
