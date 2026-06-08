@@ -51,16 +51,16 @@ entry {
 }
 
 listview {
-    lines:        12;
+    lines:        14;
     columns:      1;
     fixed-height: true;
-    spacing:      4px;
+    spacing:      3px;
     scrollbar:    false;
     padding:      1px;
 }
 
 element {
-    padding: 8px 10px;
+    padding: 6px 9px;
     spacing: 10px;
     border:  1px;
     border-color: transparent;

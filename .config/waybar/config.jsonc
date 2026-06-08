@@ -6,7 +6,7 @@
 
     "modules-left": ["custom/launcher", "sway/workspaces", "sway/scratchpad"],
     "modules-center": ["mpris", "clock", "custom/pomodoro"],
-    "modules-right": ["network", "bluetooth", "custom/mic-muted", "wireplumber", "backlight", "battery", "idle_inhibitor", "privacy", "tray", "custom/power"],
+    "modules-right": ["custom/vpn", "network", "bluetooth", "custom/mic-muted", "wireplumber", "backlight", "battery", "idle_inhibitor", "privacy", "tray", "custom/power"],
 
     "sway/workspaces": {
         "format": "{name} {windows}",
@@ -24,7 +24,6 @@
             "class<KeePassXC>": "󰌾",
             "class<keepassxc>": "󰌾",
             "class<pavucontrol>": "󰕾",
-            "class<blueman-manager>": "󰂯",
             "class<wdisplays>": "󰍹",
             "class<code>": "󰨞",
             "class<Code>": "󰨞",
@@ -139,8 +138,7 @@
 
     "tray": {
         "icon-size": 14,
-        "spacing": 10,
-        "ignored-items": ["org/blueman/sni", "blueman", "blueman-tray", "Blueman"]
+        "spacing": 10
     },
 
     "bluetooth": {
@@ -152,8 +150,7 @@
         "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
         "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\nBattery: {device_battery_percentage}%",
-        "on-click": "$HOME/.config/rofi/bluetooth",
-        "on-click-right": "$HOME/.config/rofi/bluetooth"
+        "on-click": "$HOME/.config/rofi/bluetooth"
     },
 
     "network": {
@@ -165,8 +162,14 @@
         "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
         "tooltip-format-disconnected": "Disconnected",
         "interval": 15,
-        "on-click": "$HOME/.config/rofi/network",
-        "on-click-right": "$HOME/.config/rofi/network"
+        "on-click": "$HOME/.config/rofi/network"
+    },
+
+    "custom/vpn": {
+        "exec": "$HOME/.config/waybar/scripts/vpn-status",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
     },
 
     "battery": {

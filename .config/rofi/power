@@ -4,13 +4,6 @@ ROFI=${ROFI:-rofi}
 TAB=$(printf '\t')
 LOCK="$HOME/.config/sway/scripts/lock"
 
-MENU_THEME='
-window { width: 28%; }
-listview { lines: 5; }
-entry { placeholder: "Search actions"; }
-element { padding: 10px 12px; }
-'
-
 CONFIRM_THEME='
 window { width: 24%; }
 listview { lines: 2; }
@@ -36,11 +29,10 @@ menu() {
         -matching fuzzy \
         -sync \
         -p "Power" \
-        -mesg "Session actions" \
-        -display-columns 1 \
-        -display-column-separator "$TAB" \
+        -show-icons \
+        -icon-theme "rofi-power-nerd" \
         -selected-row 0 \
-        -theme-str "$MENU_THEME"
+        -theme "$HOME/.config/rofi/power-grid.rasi"
 }
 
 confirm() {
@@ -69,15 +61,22 @@ require rofi
 
 choice=$(
     {
-        printf '%s\t%s\n' "󰒲  Sleep" "sleep"
-        printf '%s\t%s\n' "󰌾  Lock" "lock"
-        printf '%s\t%s\n' "󰗼  Log out" "logout"
-        printf '%s\t%s\n' "󰜉  Reboot" "reboot"
-        printf '%s\t%s\n' "󰐥  Shutdown" "shutdown"
+        printf '%s\0icon\x1f%s\n' "Sleep" "power-sleep"
+        printf '%s\0icon\x1f%s\n' "Lock" "power-lock"
+        printf '%s\0icon\x1f%s\n' "Log out" "power-logout"
+        printf '%s\0icon\x1f%s\n' "Reboot" "power-reboot"
+        printf '%s\0icon\x1f%s\n' "Shutdown" "power-shutdown"
     } | menu
 )
 
-action=$(printf '%s' "$choice" | cut -f2)
+case "$choice" in
+    *Sleep) action=sleep ;;
+    *Lock) action=lock ;;
+    *"Log out") action=logout ;;
+    *Reboot) action=reboot ;;
+    *Shutdown) action=shutdown ;;
+    *) action= ;;
+esac
 
 case "$action" in
     lock)

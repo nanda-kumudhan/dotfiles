@@ -31,22 +31,6 @@ Useful options:
 ./install.sh --no-aur
 ```
 
-## Sync
-
-Copy selected live dotfiles back into this repo:
-
-```bash
-./sync-from-home.sh
-```
-
-This also refreshes `packages.txt` from `pacman -Qqe`.
-
-Check first:
-
-```bash
-./sync-from-home.sh --check
-```
-
 The installer backs up replaced files under `~/.dotfiles-backup/`.
 Only top-level hidden files and directories from the repository are deployed; package manifests, logs, and installer sources stay inside the clone.
 

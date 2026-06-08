@@ -6,6 +6,7 @@ export XDG_DATA_DIRS="$HOME/.local/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/
 
 exec rofi \
     -show drun \
+    -theme "$HOME/.config/rofi/launcher-grid.rasi" \
     -show-icons \
     -icon-theme Papirus-Dark \
     -matching fuzzy \
@@ -15,6 +16,7 @@ exec rofi \
     -drun-reload-desktop-cache \
     -drun-match-fields "name,generic,keywords,categories,comment,exec" \
     -drun-display-format "{name}" \
+    -ellipsize-mode end \
     -application-fallback-icon application-x-executable \
     -terminal foot \
     -display-drun "Apps" \

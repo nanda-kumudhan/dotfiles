@@ -662,7 +662,7 @@ deploy_file() {
     dest="$HOME/$rel"
 
     case "$rel" in
-        .git/*|.git|.gitignore|README|README.*|install.sh|bootstrap.sh|sync-from-home.sh)
+        .git/*|.git|.gitignore|README|README.*|install.sh|bootstrap.sh)
             return 0
             ;;
     esac

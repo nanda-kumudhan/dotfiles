@@ -3,9 +3,12 @@
 set -u
 
 ROFI_CMD="${ROFI_CMD:-rofi -dmenu -i -p Bluetooth}"
+ROW_THEME="-theme-str 'listview { lines: 10; spacing: 4px; } element { padding: 11px 10px; }'"
+SCAN_SECONDS="${SCAN_SECONDS:-8}"
 
 notify() {
-    command -v notify-send >/dev/null 2>&1 && notify-send "Bluetooth" "$1"
+    command -v notify-send >/dev/null 2>&1 &&
+        notify-send "Bluetooth" "$1"
 }
 
 need_cmd() {
@@ -19,31 +22,33 @@ bt() {
     bluetoothctl "$@" 2>/dev/null
 }
 
-device_name() {
-    local mac="$1"
-
-    bt info "$mac" | awk -F': ' '
-        /^\s*Name:/ {print $2; found=1; exit}
-        /^\s*Alias:/ && !found {alias=$2}
-        END { if (!found && alias != "") print alias }
-    '
+rofi_menu() {
+    printf '%s\n' "$@" | eval "$ROFI_CMD $ROW_THEME"
 }
 
-device_state() {
+adapter_powered() {
+    bt show | awk -F': ' '/Powered:/ {print $2; exit}'
+}
+
+device_field() {
     local mac="$1"
-    bt info "$mac" | awk -F': ' '
-        /^\s*Connected:/ {connected=$2}
-        /^\s*Paired:/ {paired=$2}
-        END {
-            if (connected == "yes") { print "connected"; exit }
-            if (paired == "yes") { print "paired"; exit }
-            print "available"
-        }
-    '
+    local field="$2"
+
+    bt info "$mac" |
+        awk -F': ' -v field="$field" '$1 ~ "^[[:space:]]*" field "$" {print $2; exit}'
+}
+
+device_name() {
+    local mac="$1"
+    local name
+
+    name="$(device_field "$mac" Name)"
+    [ -n "$name" ] || name="$(device_field "$mac" Alias)"
+    printf '%s\n' "${name:-$mac}"
 }
 
 device_rows() {
-    local mac name state marker rank
+    local mac name connected paired marker rank labels
 
     bt devices |
         awk '/^Device ([[:xdigit:]]{2}:){5}[[:xdigit:]]{2} / {
@@ -57,59 +62,265 @@ device_rows() {
             [ -n "$mac" ] || continue
             [ -n "$name" ] || name="$mac"
 
-            state=$(device_state "$mac")
-            case "$state" in
-                connected) marker="●"; rank=0 ;;
-                paired) marker="◐"; rank=1 ;;
-                *) marker="○"; rank=2 ;;
-            esac
+            connected="$(device_field "$mac" Connected)"
+            paired="$(device_field "$mac" Paired)"
+            labels=""
 
-            printf '%d\t%s  %-32.32s\t%s\n' "$rank" "$marker" "$name" "$mac"
+            if [ "$connected" != "yes" ] &&
+                [ "$paired" != "yes" ] &&
+                [ "${SHOW_NEARBY:-0}" != "1" ]; then
+                continue
+            fi
+
+            if [ "$connected" = "yes" ]; then
+                marker="●"
+                rank=0
+                labels=" connected"
+            elif [ "$paired" = "yes" ]; then
+                marker="◐"
+                rank=1
+                labels=""
+            else
+                marker="○"
+                rank=2
+                labels=" new"
+            fi
+
+            printf '%d\t%s\t%s\t%s  %-32.32s%s\n' \
+                "$rank" "$name" "$mac" "$marker" "$name" "$labels"
         done |
         sort -t $'\t' -k1,1n -k2,2f |
-        cut -f2-
+        awk -F'\t' '$1 < 2 || nearby++ < 8' |
+        cut -f3-
 }
 
-toggle_device() {
-    local choice mac state name
+extract_mac() {
+    printf '%s\n' "$1" |
+        grep -Eo '([[:xdigit:]]{2}:){5}[[:xdigit:]]{2}' |
+        head -n1
+}
 
-    choice=$1
-    mac=$(printf '%s' "$choice" | grep -Eo '([[:xdigit:]]{2}:){5}[[:xdigit:]]{2}' | head -n1)
-    [ -n "$mac" ] || exit 0
+run_action() {
+    local success_pattern="$1"
+    local success_message="$2"
+    local failure_message="$3"
+    shift 3
 
-    state=$(device_state "$mac")
-    name=$(device_name "$mac")
-    [ -n "$name" ] || name="$mac"
-
-    if [ "$state" = "connected" ]; then
-        if bt disconnect "$mac" >/dev/null 2>&1; then
-            notify "Disconnected: $name"
-        else
-            notify "Failed to disconnect: $name"
-            exit 1
-        fi
-        exit 0
+    if bluetoothctl "$@" 2>&1 | grep -qiE "$success_pattern"; then
+        notify "$success_message"
+        return 0
     fi
 
-    if bt connect "$mac" >/dev/null 2>&1; then
-        notify "Connected: $name"
+    notify "$failure_message"
+    return 1
+}
+
+toggle_power() {
+    if [ "$(adapter_powered)" = "yes" ]; then
+        bt power off >/dev/null
+        notify "Bluetooth powered off"
     else
-        notify "Failed to connect: $name"
-        exit 1
+        bt power on >/dev/null
+        notify "Bluetooth powered on"
     fi
+}
+
+scan_devices() {
+    bt power on >/dev/null
+    notify "Scanning for ${SCAN_SECONDS} seconds"
+    bluetoothctl --timeout "$SCAN_SECONDS" scan on >/dev/null 2>&1 || true
+    SHOW_NEARBY=1
+    notify "Scan complete"
+}
+
+connect_device() {
+    local mac="$1"
+    local name
+
+    name="$(device_name "$mac")"
+    run_action \
+        'successful|already connected' \
+        "Connected: $name" \
+        "Failed to connect: $name" \
+        connect "$mac"
+}
+
+disconnect_device() {
+    local mac="$1"
+    local name
+
+    name="$(device_name "$mac")"
+    run_action \
+        'successful|not connected' \
+        "Disconnected: $name" \
+        "Failed to disconnect: $name" \
+        disconnect "$mac"
+}
+
+pair_device() {
+    local mac="$1"
+    local name output
+
+    name="$(device_name "$mac")"
+    bt power on >/dev/null
+    output="$(bluetoothctl --agent NoInputNoOutput --timeout 60 pair "$mac" 2>&1)"
+
+    if printf '%s\n' "$output" |
+        grep -qiE 'successful|already paired|already exists'; then
+        bt trust "$mac" >/dev/null
+        notify "Paired and trusted: $name"
+    else
+        notify "Pairing failed: $name"
+    fi
+}
+
+toggle_trust() {
+    local mac="$1"
+    local name
+
+    name="$(device_name "$mac")"
+    if [ "$(device_field "$mac" Trusted)" = "yes" ]; then
+        run_action \
+            'succeeded|successful' \
+            "Untrusted: $name" \
+            "Failed to untrust: $name" \
+            untrust "$mac"
+    else
+        run_action \
+            'succeeded|successful' \
+            "Trusted: $name" \
+            "Failed to trust: $name" \
+            trust "$mac"
+    fi
+}
+
+remove_device() {
+    local mac="$1"
+    local name confirm
+
+    name="$(device_name "$mac")"
+    confirm="$(rofi_menu "Cancel" "Remove $name")"
+    [ "$confirm" = "Remove $name" ] || return
+
+    run_action \
+        'removed|successful' \
+        "Removed: $name" \
+        "Failed to remove: $name" \
+        remove "$mac"
+}
+
+show_info() {
+    local mac="$1"
+    local info
+
+    info="$(bt info "$mac")"
+    printf '%s\n' "${info:-No device information available}" |
+        rofi -dmenu -i -p "Device info" >/dev/null
+}
+
+device_menu() {
+    local mac="$1"
+    local connected paired trusted action connect_action pair_action trust_action
+
+    while true; do
+        connected="$(device_field "$mac" Connected)"
+        paired="$(device_field "$mac" Paired)"
+        trusted="$(device_field "$mac" Trusted)"
+
+        if [ "$connected" = "yes" ]; then
+            connect_action="● Disconnect"
+        else
+            connect_action="○ Connect"
+        fi
+
+        if [ "$paired" = "yes" ]; then
+            pair_action="󰌾 Already paired"
+        else
+            pair_action="󰌾 Pair and trust"
+        fi
+
+        if [ "$trusted" = "yes" ]; then
+            trust_action="󰄲 Untrust"
+        else
+            trust_action="󰄲 Trust"
+        fi
+
+        action="$(
+            rofi_menu \
+                "$connect_action" \
+                "$pair_action" \
+                "$trust_action" \
+                "󰋼 Device info" \
+                "󰆴 Remove device" \
+                "← Back"
+        )"
+
+        case "$action" in
+            *"Disconnect")
+                disconnect_device "$mac" && return 10
+                ;;
+            *"Connect")
+                connect_device "$mac" && return 10
+                ;;
+            *"Already paired") notify "$(device_name "$mac") is already paired" ;;
+            *"Pair and trust") pair_device "$mac" ;;
+            *"Untrust"|*" Trust") toggle_trust "$mac" ;;
+            *"Device info") show_info "$mac" ;;
+            *"Remove device") remove_device "$mac"; return ;;
+            *"Back"|"") return ;;
+        esac
+    done
+}
+
+main_menu() {
+    local devices choice mac power_action
+
+    SHOW_NEARBY=0
+
+    while true; do
+        if [ "$(adapter_powered)" = "yes" ]; then
+            power_action="󰂯 Power off"
+            devices="$(device_rows)"
+        else
+            power_action="󰂲 Power on"
+            devices=""
+        fi
+
+        choice="$(
+            {
+                if [ -n "$devices" ]; then
+                    printf '%s\n' "$devices"
+                else
+                    printf '%s\n' "status	󰂱 No devices"
+                fi
+                printf '%s\n' "action	$power_action"
+                printf '%s\n' "action	󰑓 Scan"
+                printf '%s\n' "action	󰋼 Details"
+            } | eval "$ROFI_CMD $ROW_THEME" -format s -display-columns 2
+        )"
+
+        case "$choice" in
+            "") exit 0 ;;
+            *"Power on"|*"Power off") toggle_power ;;
+            *"Scan"|"status	󰂱 No devices") scan_devices ;;
+            *"Details")
+                bt show | rofi -dmenu -i -p "Adapter info" >/dev/null
+                ;;
+            *)
+                mac="$(printf '%s\n' "$choice" | cut -f1)"
+                if [ -n "$mac" ]; then
+                    device_menu "$mac"
+                    [ "$?" -eq 10 ] && exit 0
+                fi
+                ;;
+        esac
+    done
 }
 
 main() {
     need_cmd bluetoothctl
     need_cmd rofi
-
-    rows=$(device_rows)
-    [ -n "$rows" ] || exit 0
-
-    choice=$(printf '%s\n' "$rows" | eval "$ROFI_CMD" -format s)
-    [ -n "$choice" ] || exit 0
-
-    toggle_device "$choice"
+    main_menu
 }
 
 main "$@"
