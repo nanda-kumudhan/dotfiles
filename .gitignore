@@ -18,3 +18,4 @@ core.*
 .config/rofi/applications/
 .config/rofi/desktop-directories/
 .config/rofi/icons/
+.config/htop/htop_history

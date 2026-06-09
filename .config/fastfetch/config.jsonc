@@ -5,7 +5,7 @@
         "source": "arch",
         "color": {
             "1": "cyan",
-            "2": "blue"
+            "2": "cyan"
         },
         "padding": {
             "top": 1,
@@ -30,7 +30,7 @@
         "break",
         {
             "type": "custom",
-            "format": "{#4}╭─ {#15}core"
+            "format": "{#6}╭─ {#15}core"
         },
         {
             "type": "title",
@@ -40,7 +40,7 @@
         {
             "type": "os",
             "key": "   distro",
-            "keyColor": "blue"
+            "keyColor": "cyan"
         },
         {
             "type": "kernel",
@@ -52,7 +52,7 @@
             "type": "packages",
             "key": "  󰏗 packages",
             "combined": true,
-            "keyColor": "blue"
+            "keyColor": "cyan"
         },
         {
             "type": "command",
@@ -63,7 +63,7 @@
         {
             "type": "uptime",
             "key": "  󰅐 uptime",
-            "keyColor": "blue"
+            "keyColor": "cyan"
         },
         {
             "type": "shell",
@@ -186,7 +186,7 @@
         },
         {
             "type": "custom",
-            "format": "{#4}╰─ {#15}\u001b[34m● \u001b[36m● \u001b[32m● \u001b[33m● \u001b[35m● \u001b[31m●\u001b[0m"
+            "format": "{#6}╰─ {#15}\u001b[36m● \u001b[36m● \u001b[32m● \u001b[33m● \u001b[35m● \u001b[31m●\u001b[0m"
         },
         "break"
     ]

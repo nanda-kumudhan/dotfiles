@@ -62,6 +62,7 @@ require rofi
 choice=$(
     {
         printf '%s\0icon\x1f%s\n' "Sleep" "power-sleep"
+        printf '%s\0icon\x1f%s\n' "Hibernate" "power-hibernate"
         printf '%s\0icon\x1f%s\n' "Lock" "power-lock"
         printf '%s\0icon\x1f%s\n' "Log out" "power-logout"
         printf '%s\0icon\x1f%s\n' "Reboot" "power-reboot"
@@ -71,6 +72,7 @@ choice=$(
 
 case "$choice" in
     *Sleep) action=sleep ;;
+    *Hibernate) action=hibernate ;;
     *Lock) action=lock ;;
     *"Log out") action=logout ;;
     *Reboot) action=reboot ;;
@@ -84,6 +86,9 @@ case "$action" in
         ;;
     sleep)
         systemctl suspend
+        ;;
+    hibernate)
+        systemctl hibernate
         ;;
     logout)
         confirm "Log out" && swaymsg exit
