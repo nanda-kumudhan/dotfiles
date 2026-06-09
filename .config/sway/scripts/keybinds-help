@@ -57,7 +57,7 @@ Ctrl + Shift + Print	Start or stop region recording	record-region
 SESSION
 Super + L	Lock screen	lock
 Super + Shift + L	Show idle-inhibitor guidance	idle-guidance
-Super + Shift + S	Confirm suspend	sleep
+Super + Shift + S	Suspend immediately	sleep
 Ctrl + Alt + Delete	Open power menu	power
 Super + Shift + R	Reload Sway	reload
 APPLICATIONS
@@ -66,6 +66,9 @@ Super + K	Open KeePassXC	keepassxc
 Super + N	Open network menu	network
 Super + P	Open display menu	display-menu
 Super + Shift + P	Open Wdisplays	wdisplays
+Super + W	Open LibreWolf	librewolf
+Super + X	Open VSCodium	vscodium
+Super + Z	Open Neovim	neovim
 MEDIA AND HARDWARE
 Audio Mute	Toggle output mute	audio-mute
 Mic Mute	Toggle microphone mute	mic-mute
@@ -170,9 +173,7 @@ run_action() {
         record-region) "$HOME/.config/sway/scripts/screenrecord" region ;;
         lock) "$HOME/.config/sway/scripts/lock" ;;
         idle-guidance) "$HOME/.config/sway/scripts/caffeine" toggle ;;
-        sleep)
-            swaynag -t warning -m "Do you want to sleep?" -b Yes "systemctl suspend"
-            ;;
+        sleep) systemctl suspend ;;
         power) "$HOME/.config/rofi/power" ;;
         reload) run_sway reload ;;
         bluetooth) "$HOME/.config/rofi/bluetooth" ;;
@@ -180,6 +181,9 @@ run_action() {
         network) "$HOME/.config/rofi/network" ;;
         display-menu) "$HOME/.config/rofi/displays" ;;
         wdisplays) "$HOME/.config/sway/scripts/gui-env" wdisplays ;;
+        librewolf) "$HOME/.config/sway/scripts/gui-env" librewolf ;;
+        vscodium) "$HOME/.config/sway/scripts/gui-env" vscodium ;;
+        neovim) foot -T neovim -e nvim ;;
         audio-mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
         mic-mute) wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle ;;
         audio-output) "$HOME/.config/rofi/pipewire-output" ;;

@@ -199,12 +199,15 @@ bindsym Mod1+Tab exec $HOME/.config/sway/scripts/cycle-app next
 bindsym Mod1+Shift+Tab exec $HOME/.config/sway/scripts/cycle-app prev
 
 # Session actions
-bindsym $mod+Shift+s exec swaynag -t warning -m 'Do you want to sleep?' -b 'Yes' 'systemctl suspend'
+bindsym $mod+Shift+s exec systemctl suspend
 
 # App shortcuts
 bindsym $mod+b exec $bluetooth_menu
 bindsym $mod+k exec $gui_env keepassxc --minimized
 bindsym $mod+n exec $network_menu
+bindsym $mod+w exec $gui_env librewolf
+bindsym $mod+x exec $gui_env vscodium
+bindsym $mod+z exec $term -T "neovim" -e nvim
 
 # Scratchpad: hide/show any focused window
 bindsym $mod+Shift+grave move scratchpad
