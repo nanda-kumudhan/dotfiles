@@ -16,6 +16,8 @@ set $launcher $HOME/.config/rofi/launcher
 set $lock $HOME/.config/sway/scripts/lock
 set $caffeine $HOME/.config/sway/scripts/caffeine
 set $screenshot $HOME/.config/sway/scripts/screenshot
+set $screenrecord $HOME/.config/sway/scripts/screenrecord
+set $keybinds_help $HOME/.config/sway/scripts/keybinds-help
 set $gui_env $HOME/.config/sway/scripts/gui-env
 set $wallpaper $HOME/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
@@ -134,6 +136,9 @@ bindsym $mod+Shift+l exec $caffeine toggle
 bindsym Ctrl+Escape exec $term -T "sysmon" -e htop
 bindsym Print exec $screenshot full
 bindsym Shift+Print exec $screenshot region
+bindsym Ctrl+Print exec $screenrecord full
+bindsym Ctrl+Shift+Print exec $screenrecord region
+bindsym $mod+slash exec $keybinds_help
 
 # Window management
 bindsym $mod+h splith
@@ -221,7 +226,6 @@ bindsym XF86Display exec $display_menu
 bindsym XF86AudioPrev exec playerctl previous
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPlay exec playerctl play-pause
-bindsym F11 exec notify-send "Shortcuts" "$(cat ~/.keybinds_help)"
 bindsym XF86MonBrightnessDown exec "brightnessctl s 3%- -n 0.3l%"
 bindsym XF86MonBrightnessUp exec "brightnessctl set +3%"
 bindsym XF86AudioStop exec playerctl stop

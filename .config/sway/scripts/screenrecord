@@ -1,0 +1,76 @@
+#!/bin/sh
+
+mode=${1:-full}
+dir="$HOME/Videos/Recordings"
+runtime_dir=${XDG_RUNTIME_DIR:-"/tmp/user-$(id -u)"}
+state="$runtime_dir/sway-screenrecord"
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "Screen recording" "$1 is not installed"
+        exit 1
+    fi
+}
+
+stop_recording() {
+    pid=$(sed -n '1p' "$state")
+    file=$(sed -n '2p' "$state")
+
+    if [ -n "$pid" ] && [ -r "/proc/$pid/comm" ] &&
+        [ "$(cat "/proc/$pid/comm")" = "wf-recorder" ]; then
+        kill -INT "$pid"
+        while kill -0 "$pid" 2>/dev/null; do
+            sleep 0.1
+        done
+        notify "Screen recording" "Saved ${file#$HOME/}"
+    fi
+
+    rm -f "$state"
+}
+
+if [ -f "$state" ]; then
+    pid=$(sed -n '1p' "$state")
+    if [ -n "$pid" ] && [ -r "/proc/$pid/comm" ] &&
+        [ "$(cat "/proc/$pid/comm")" = "wf-recorder" ]; then
+        stop_recording
+        exit 0
+    fi
+    rm -f "$state"
+fi
+
+require wf-recorder
+require swaymsg
+require jq
+mkdir -p "$dir" "$runtime_dir" || exit 1
+file="$dir/recording-$(date +%Y%m%d-%H%M%S).mp4"
+
+case "$mode" in
+    full)
+        output=$(swaymsg -t get_workspaces -r |
+            jq -r '.[] | select(.focused) | .output')
+        [ -n "$output" ] && [ "$output" != "null" ] || {
+            notify "Screen recording" "Could not determine the focused display"
+            exit 1
+        }
+        set -- -o "$output"
+        ;;
+    region)
+        require slurp
+        geometry=$(slurp) || exit 0
+        [ -n "$geometry" ] || exit 0
+        set -- -g "$geometry"
+        ;;
+    *)
+        notify "Screen recording" "Unknown mode: $mode"
+        exit 1
+        ;;
+esac
+
+wf-recorder "$@" -f "$file" >/dev/null 2>&1 &
+pid=$!
+printf '%s\n%s\n' "$pid" "$file" > "$state"
+notify "Screen recording" "Recording started; press the shortcut again to stop"

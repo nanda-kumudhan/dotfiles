@@ -27,6 +27,7 @@ save_region() {
 }
 
 require grim
+require wl-copy
 mkdir -p "$dir" || exit 1
 
 case "$mode" in
@@ -43,4 +44,5 @@ case "$mode" in
         ;;
 esac
 
-notify "Screenshot" "Saved ${file#$HOME/}"
+wl-copy --type image/png < "$file"
+notify "Screenshot" "Saved ${file#$HOME/} and copied to clipboard"
