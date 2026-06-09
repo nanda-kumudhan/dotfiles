@@ -1,0 +1,11 @@
+android-studio
+arduino-ide-bin
+gruvbox-dark-gtk
+gruvbox-dark-icons-gtk
+kvantum-theme-gruvbox-git
+librewolf-bin
+localsend-bin
+papirus-folders
+paru
+vscodium-bin
+yay

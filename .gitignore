@@ -2,6 +2,8 @@
 Trash/
 *.log
 pkglist-*.txt
+!pkglist-repo.txt
+!pkglist-aur.txt
 *.sqlite
 *.sqlite-*
 *.db
