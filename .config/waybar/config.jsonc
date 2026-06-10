@@ -42,6 +42,9 @@
             "class<Brave-browser>": "󰖟",
             "class<Brave Browser>": "󰖟",
             "class<com.brave.Browser>": "󰖟",
+            "class<brave-origin>": "󰖟",
+            "class<Brave-origin>": "󰖟",
+            "class<Brave Origin>": "󰖟",
             "app_id<brave-cinhimbnkkaeohfgghhklpknlkffjgod-Default>": "󰝚",
             "class<brave-music.youtube.com__-Default>": "󰝚",
             "class<YouTube Music>": "󰝚",
@@ -69,24 +72,6 @@
         "format-icons": ["", ""],
         "tooltip": true,
         "tooltip-format": "{app}: {title}"
-    },
-
-    "wlr/taskbar": {
-        "format": "{icon}",
-        "icon-size": 24,
-        "icon-theme": "waybar-nerd-taskbar",
-        "tooltip-format": "{name}\n{title}",
-        "on-click": "minimize-raise",
-        "on-click-right": "activate",
-        "on-click-middle": "close",
-        "all-outputs": false,
-        "active-first": false,
-        "app_ids-mapping": {
-            "codium": "vscodium",
-            "Code": "vscodium",
-            "footclient": "foot",
-            "scratchpad_term": "foot"
-        }
     },
 
     "mpris": {
@@ -246,7 +231,7 @@
 
     "clock": {
         "format": "{:%H:%M}",
-        "tooltip-format": "{:%A, %d %B %Y\n%H:%M:%S}\n\n{calendar}",
+        "tooltip-format": "{:%A, %d %B %Y\n%H:%M}\n\n{calendar}",
         "calendar": {
             "mode": "month",
             "on-scroll": 1,
