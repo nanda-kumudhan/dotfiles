@@ -1,6 +1,6 @@
 profile external {
-    output eDP-1 disable
-    output "*" enable position 0,0 scale 1.0
+    output eDP-1 enable mode preferred position 0,0 scale 1.0
+    output "*" enable position 1920,0 scale 1.0
     exec $HOME/.config/sway/scripts/workspace-outputs apply
 }
 

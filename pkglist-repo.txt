@@ -14,6 +14,7 @@ dbeaver
 distrobox
 dosfstools
 efibootmgr
+evtest
 ex-vi-compat
 exfatprogs
 fastfetch
@@ -21,6 +22,7 @@ ffmpegthumbnailer
 firewalld
 foot
 freerdp
+fuse-overlayfs
 git
 go
 greetd
@@ -44,8 +46,11 @@ kvantum-qt5
 libpulse
 libreoffice-fresh
 libva-intel-driver
+libva-utils
+linux
 linux-firmware
 linux-lts
+linuxconsole
 mako
 man-db
 mokutil
@@ -73,6 +78,7 @@ podman-desktop
 polkit-gnome
 powertop
 qemu-desktop
+reflector
 remmina
 rofi
 sassc

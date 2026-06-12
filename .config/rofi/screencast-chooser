@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -u
+
+ROFI=${ROFI:-rofi}
+TAB=$'\t'
+
+MENU_THEME='
+window { width: 44%; }
+listview { lines: 8; }
+entry { placeholder: "Filter sources"; }
+element { padding: 10px 12px; }
+'
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 &&
+        notify-send "Screen sharing" "$1"
+}
+
+require() {
+    command -v "$1" >/dev/null 2>&1 || {
+        notify "$1 is not installed"
+        exit 1
+    }
+}
+
+monitor_description() {
+    local name=$1
+
+    swaymsg -t get_outputs -r 2>/dev/null |
+        jq -r --arg name "$name" '
+            .[] | select(.name == $name)
+            | [.make, .model]
+            | map(select(. != null and . != ""))
+            | join(" ")
+        '
+}
+
+format_rows() {
+    local source name description
+
+    while IFS= read -r source; do
+        [ -n "$source" ] || continue
+
+        case "$source" in
+            "Monitor: "*)
+                name=${source#Monitor: }
+                description=$(monitor_description "$name")
+                printf '󰍹  %-12s %s\t%s\n' "$name" "$description" "$source"
+                ;;
+            "Window: "*)
+                printf '󰖲  %s\t%s\n' "${source#Window: }" "$source"
+                ;;
+            *)
+                printf '󰒄  %s\t%s\n' "$source" "$source"
+                ;;
+        esac
+    done
+}
+
+require rofi
+require swaymsg
+require jq
+
+selection=$(
+    format_rows |
+        "$ROFI" \
+            -dmenu \
+            -i \
+            -no-custom \
+            -matching fuzzy \
+            -sync \
+            -p "Share" \
+            -mesg "Choose a monitor or window to share. Esc cancels." \
+            -display-columns 1 \
+            -display-column-separator "$TAB" \
+            -selected-row 0 \
+            -theme-str "$MENU_THEME"
+) || exit 0
+
+printf '%s\n' "$selection" | cut -f2-
