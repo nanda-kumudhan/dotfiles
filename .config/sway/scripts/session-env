@@ -7,7 +7,7 @@ export GDK_BACKEND=wayland,x11
 
 export QT_QPA_PLATFORM='wayland;xcb'
 export QT_QPA_PLATFORMTHEME=gtk3
-export QT_STYLE_OVERRIDE=kvantum
+unset QT_STYLE_OVERRIDE
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 
 export XCURSOR_THEME=default

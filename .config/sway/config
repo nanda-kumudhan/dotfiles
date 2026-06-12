@@ -20,8 +20,8 @@ set $screenrecord $HOME/.config/sway/scripts/screenrecord
 set $keybinds_help $HOME/.config/sway/scripts/keybinds-help
 set $gui_env $HOME/.config/sway/scripts/gui-env
 set $wallpaper $HOME/Pictures/wallpaper
-set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
-set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24
+set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
+set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -42,24 +42,28 @@ set $m_urgent #ffffff
 set $m_text #e6e6e6
 
 font pango:JetBrainsMono Nerd Font 10
-default_border pixel 1
-default_floating_border pixel 1
-titlebar_border_thickness 0
-titlebar_padding 4 0
+default_border normal 2
+default_floating_border normal 2
+titlebar_border_thickness 1
+titlebar_padding 6 3
+title_align center
+show_marks no
 gaps inner 3
 gaps outer 2
 smart_gaps off
 smart_borders on
 hide_edge_borders smart
 
-# Apply gap changes to already-open workspaces on reload.
+# Apply theme geometry to already-open windows and workspaces on reload.
+exec_always swaymsg -q '[all] border normal 2'
 exec_always swaymsg -q gaps inner all set 3
 exec_always swaymsg -q gaps outer all set 2
 
-client.focused $m_active #000000 $m_text $m_active $m_active
-client.focused_inactive #2a2a2a #000000 #9a9a9a #2a2a2a #2a2a2a
-client.unfocused $m_bg $m_bg #666666 $m_bg $m_bg
-client.urgent #ffffff #111111 $m_text #ffffff #ffffff
+client.focused $m_active $m_bg $m_text $m_active $m_active
+client.focused_inactive $m_inactive $m_bg #9a9a9a $m_inactive $m_inactive
+client.focused_tab_title $m_active $m_bg $m_text
+client.unfocused $m_bg $m_bg #666666 $m_inactive $m_inactive
+client.urgent $m_urgent $m_bg $m_urgent $m_urgent $m_urgent
 
 # --- Startup ---
 
