@@ -1,7 +1,6 @@
 android-studio
 arduino-ide-bin
 brave-origin-bin
-greetd-wlgreet
 gruvbox-dark-gtk
 gruvbox-dark-icons-gtk
 kvantum-theme-gruvbox-git

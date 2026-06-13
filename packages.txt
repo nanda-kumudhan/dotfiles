@@ -30,7 +30,6 @@ git
 go
 greetd
 greetd-tuigreet
-greetd-wlgreet
 grim
 gruvbox-dark-gtk
 gruvbox-dark-icons-gtk

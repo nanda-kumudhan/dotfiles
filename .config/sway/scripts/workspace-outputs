@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -eu
+
+laptop="eDP-1"
+outputs="$(swaymsg -t get_outputs -r)"
+workspaces="$(swaymsg -t get_workspaces -r)"
+
+laptop_active="$(
+    printf '%s\n' "$outputs" |
+        jq -r --arg output "$laptop" \
+            'any(.[]; .name == $output and .active)'
+)"
+external="$(
+    printf '%s\n' "$outputs" |
+        jq -r --arg laptop "$laptop" \
+            '[.[] | select(.active and (.non_desktop | not) and .name != $laptop)] |
+             first | .name // empty'
+)"
+focused="$(
+    printf '%s\n' "$workspaces" |
+        jq -r '.[] | select(.focused) | .name' |
+        head -n 1
+)"
+
+move_existing() {
+    range="$1"
+    output="$2"
+
+    printf '%s\n' "$workspaces" |
+        jq -r --argjson range "$range" \
+            '.[] | select(.num as $n | $range | index($n)) | .name' |
+        while IFS= read -r workspace; do
+            swaymsg -q "workspace \"$workspace\"; move workspace to output \"$output\""
+        done
+}
+
+if [ "$laptop_active" = "true" ] && [ -n "$external" ]; then
+    move_existing '[1,2,3,4,5]' "$laptop"
+    move_existing '[6,7,8,9]' "$external"
+elif [ "$laptop_active" = "true" ]; then
+    move_existing '[1,2,3,4,5,6,7,8,9]' "$laptop"
+elif [ -n "$external" ]; then
+    move_existing '[1,2,3,4,5,6,7,8,9]' "$external"
+fi
+
+if [ -n "$focused" ]; then
+    swaymsg -q "workspace \"$focused\""
+fi
