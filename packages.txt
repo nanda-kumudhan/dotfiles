@@ -23,6 +23,7 @@ exfatprogs
 fastfetch
 ffmpegthumbnailer
 firewalld
+flatpak
 foot
 freerdp
 fuse-overlayfs
@@ -87,6 +88,7 @@ podman
 podman-desktop
 polkit-gnome
 powertop
+prismlauncher
 qemu-desktop
 reflector
 remmina

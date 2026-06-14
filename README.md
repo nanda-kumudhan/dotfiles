@@ -1,37 +1,117 @@
 # Dotfiles
 
-Personal Sway, Waybar, Rofi, GTK/Kvantum Gruvbox, Starship, Fastfetch, Foot, and shell config.
+My Arch Linux desktop configuration for Sway, Waybar, Rofi, Foot, Neovim,
+Fastfetch, Starship, GTK, and Kvantum.
 
-> [!IMPORTANT]
-> These dotfiles support Arch Linux only. The installer requires `pacman` and may install packages from the AUR.
+## Quick Install
 
-## Install
-
-Run from a fresh Arch Linux system:
+Run this on Arch Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
 ```
 
-The tracked `packages.txt` contains the complete package set. The installer uses only `pacman` and an AUR helper, shows what is already installed, asks before installing missing packages, and bootstraps `yay` if needed. Fonts, Papirus icons, Gruvbox GTK/icons, and the Kvantum theme are installed as Arch/AUR packages. After installation, `papirus-folders` applies grey folders to the Papirus themes. Omit `-y` for confirmation prompts:
+The installer adds the required official and AUR packages, backs up replaced
+files to `~/.dotfiles-backup/`, and links the dotfiles into your home
+directory. Log out and back in when it finishes.
+
+To review each action before installing, omit `-y`:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
 ```
 
-Useful options:
+Useful commands after cloning:
 
 ```bash
-./install.sh --dry-run
-./install.sh --copy
-./install.sh --files-only
-./install.sh --deps-only -y
+./install.sh --dry-run           # Preview changes
+./install.sh --files-only        # Install configuration only
+./install.sh --deps-only -y      # Install packages only
+./install.sh --copy              # Copy instead of symlink
 ./install.sh --enable-services -y
-./install.sh --aur-helper paru
-./install.sh --no-aur
 ```
 
-The installer backs up replaced files under `~/.dotfiles-backup/`.
-Only top-level hidden files and directories from the repository are deployed; package manifests, logs, and installer sources stay inside the clone.
+> [!IMPORTANT]
+> This setup supports Arch Linux only and expects `pacman`.
 
-The installer prints each command, its result and duration, stage summaries, and a final warning count. Package and service failures are reported and skipped. Failures that prevent cloning, backing up, or deploying dotfiles stop the installer with the stage, line, command, and log path.
+## Keybindings
+
+`Super` is the Windows key. Press `Super + /` at any time to open the
+searchable shortcut menu and run an action.
+
+### Launchers
+
+| Keys | Action |
+| --- | --- |
+| `Ctrl + Alt + T` | Open terminal |
+| `Super + E` | Open file menu |
+| `Super + Shift + E` | Open Thunar |
+| `Super + Space` | Open application launcher |
+| `Ctrl + Escape` | Open system monitor |
+
+### Windows
+
+| Keys | Action |
+| --- | --- |
+| `Super + Q` | Close focused window |
+| `Super + H` / `Super + V` | Split horizontally / vertically |
+| `Super + R` | Toggle split layout |
+| `Super + T` / `Super + S` | Tabbed / stacking layout |
+| `Super + F` | Toggle fullscreen |
+| `Super + D` | Toggle floating |
+| `Super + Shift + D` | Toggle sticky |
+| `Super + C` | Center floating window |
+| `Super + Plus` / `Super + Minus` | Grow / shrink window width |
+| `Super + Arrow` | Focus in a direction |
+| `Super + Shift + Arrow` | Move window in a direction |
+| `Super + A` / `Super + Shift + A` | Focus parent / child |
+| `Alt + Tab` / `Alt + Shift + Tab` | Next / previous application |
+
+### Workspaces
+
+| Keys | Action |
+| --- | --- |
+| `Super + 1-9` | Switch workspace |
+| `Super + Shift + 1-9` | Move window to workspace |
+| `Super + Tab` / `Super + Shift + Tab` | Next / previous workspace |
+| `Super + Ctrl + Left/Right` | Move workspace between displays |
+| `Super + Shift + Grave` | Move window to scratchpad |
+| `Super + Grave` | Show scratchpad |
+
+### Apps And Menus
+
+| Keys | Action |
+| --- | --- |
+| `Super + B` | Bluetooth menu |
+| `Super + N` | Network menu |
+| `Super + P` | Display menu |
+| `Super + Shift + P` | Wdisplays |
+| `Super + K` | KeePassXC |
+| `Super + W` | LibreWolf |
+| `Super + X` | VSCodium |
+| `Super + Z` | Neovim |
+
+### Capture And Session
+
+| Keys | Action |
+| --- | --- |
+| `Print` / `Shift + Print` | Full / region screenshot |
+| `Ctrl + Print` / `Ctrl + Shift + Print` | Full / region recording |
+| `Super + L` | Lock screen |
+| `Super + Shift + L` | Toggle idle-inhibitor guidance |
+| `Super + Shift + S` | Suspend |
+| `Super + Shift + R` | Reload Sway |
+| `Ctrl + Alt + Delete` | Power menu |
+
+### Media And Hardware
+
+| Keys | Action |
+| --- | --- |
+| Volume and mute keys | Control output volume |
+| Mic mute key | Toggle microphone mute |
+| `Super + Audio Mute` | Choose audio output |
+| `Super + Mic Mute` | Choose audio input |
+| Media keys | Play, pause, stop, or change track |
+| Brightness keys | Change display brightness |
+| Tools key | Open volume control |
+| Display key | Open display menu |

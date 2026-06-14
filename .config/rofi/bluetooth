@@ -4,7 +4,7 @@ set -u
 
 ROFI_CMD="${ROFI_CMD:-rofi -dmenu -i -p Bluetooth}"
 ROW_THEME="-theme-str 'listview { lines: 10; spacing: 4px; } element { padding: 11px 10px; }'"
-SCAN_SECONDS="${SCAN_SECONDS:-8}"
+SCAN_SECONDS="${SCAN_SECONDS:-12}"
 
 notify() {
     command -v notify-send >/dev/null 2>&1 &&
@@ -28,6 +28,11 @@ rofi_menu() {
 
 adapter_powered() {
     bt show | awk -F': ' '/Powered:/ {print $2; exit}'
+}
+
+prepare_adapter() {
+    bt power on >/dev/null || return 1
+    bt pairable on >/dev/null || return 1
 }
 
 device_field() {
@@ -104,31 +109,52 @@ run_action() {
     local success_pattern="$1"
     local success_message="$2"
     local failure_message="$3"
+    local output error
     shift 3
 
-    if bluetoothctl "$@" 2>&1 | grep -qiE "$success_pattern"; then
+    output="$(bluetoothctl "$@" 2>&1)"
+    if printf '%s\n' "$output" | grep -qiE "$success_pattern"; then
         notify "$success_message"
         return 0
     fi
 
-    notify "$failure_message"
+    error="$(
+        printf '%s\n' "$output" |
+            sed -n '/Failed\|Authentication\|not available\|not ready/Ip' |
+            tail -n1
+    )"
+    notify "$failure_message${error:+
+$error}"
     return 1
 }
 
 toggle_power() {
     if [ "$(adapter_powered)" = "yes" ]; then
-        bt power off >/dev/null
-        notify "Bluetooth powered off"
+        if bt power off >/dev/null; then
+            notify "Bluetooth powered off"
+        else
+            notify "Failed to power Bluetooth off"
+            return 1
+        fi
     else
-        bt power on >/dev/null
-        notify "Bluetooth powered on"
+        if bt power on >/dev/null; then
+            notify "Bluetooth powered on"
+        else
+            notify "Failed to power Bluetooth on"
+            return 1
+        fi
     fi
 }
 
 scan_devices() {
-    bt power on >/dev/null
+    if ! prepare_adapter; then
+        notify "Could not prepare the Bluetooth adapter"
+        return 1
+    fi
+
     notify "Scanning for ${SCAN_SECONDS} seconds"
     bluetoothctl --timeout "$SCAN_SECONDS" scan on >/dev/null 2>&1 || true
+    bt scan off >/dev/null || true
     SHOW_NEARBY=1
     notify "Scan complete"
 }
@@ -159,19 +185,63 @@ disconnect_device() {
 
 pair_device() {
     local mac="$1"
-    local name output
+    local name output choice
 
     name="$(device_name "$mac")"
-    bt power on >/dev/null
+    if ! prepare_adapter; then
+        notify "Could not prepare the Bluetooth adapter"
+        return 1
+    fi
+
     output="$(bluetoothctl --agent NoInputNoOutput --timeout 60 pair "$mac" 2>&1)"
 
     if printf '%s\n' "$output" |
         grep -qiE 'successful|already paired|already exists'; then
         bt trust "$mac" >/dev/null
         notify "Paired and trusted: $name"
+        return 0
     else
-        notify "Pairing failed: $name"
+        output="$(
+            printf '%s\n' "$output" |
+                sed -n '/Failed\|Authentication\|not available\|not ready/Ip' |
+                tail -n1
+        )"
+        notify "Pairing failed: $name${output:+
+$output}"
+        choice="$(rofi_menu "Cancel" "Pair interactively")"
+        if [ "$choice" = "Pair interactively" ]; then
+            open_pair_terminal "$mac" "$name"
+            return $?
+        fi
+        return 1
     fi
+}
+
+open_pair_terminal() {
+    local mac="$1"
+    local name="$2"
+
+    need_cmd foot
+    foot \
+        --app-id=bluetooth-pair \
+        --title="Bluetooth pairing: $name" \
+        bash -c '
+            bluetoothctl power on
+            bluetoothctl pairable on
+            printf "\nPairing with %s\n\n" "$2"
+            bluetoothctl --agent KeyboardDisplay pair "$1"
+            status=$?
+            if [ "$status" -eq 0 ]; then
+                bluetoothctl trust "$1"
+                printf "\nPairing completed.\n"
+            else
+                printf "\nPairing failed with status %s.\n" "$status"
+            fi
+            printf "\nPress Enter to close..."
+            read -r _
+            exit "$status"
+        ' bash "$mac" "$name" >/dev/null 2>&1 &
+    return 0
 }
 
 toggle_trust() {

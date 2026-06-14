@@ -24,31 +24,49 @@ icon_for_type() {
     case "$1" in
         802-11-wireless) printf '󰖩' ;;
         802-3-ethernet) printf '󰈀' ;;
-        vpn) printf '󰌆' ;;
+        vpn|wireguard) printf '󰌆' ;;
         *) printf '󰛳' ;;
     esac
 }
 
 connection_rows() {
-    local active name type device icon rank status
+    local uuid name type device icon rank status marker
 
-    active="$(nmcli -t -f UUID,DEVICE connection show --active 2>/dev/null)"
-
-    nmcli -t -f UUID,NAME,TYPE connection show 2>/dev/null |
-        while IFS=: read -r uuid name type; do
+    nmcli --mode multiline --colors no \
+        -f UUID,NAME,TYPE,DEVICE connection show 2>/dev/null |
+        awk '
+            function value(line) {
+                sub(/^[^:]*:[[:space:]]*/, "", line)
+                return line
+            }
+            function emit() {
+                if (uuid != "") {
+                    print uuid "\t" name "\t" type "\t" device
+                }
+            }
+            /^UUID:/ {
+                emit()
+                uuid = value($0)
+                name = type = device = ""
+                next
+            }
+            /^NAME:/ { name = value($0); next }
+            /^TYPE:/ { type = value($0); next }
+            /^DEVICE:/ { device = value($0); next }
+            END { emit() }
+        ' |
+        while IFS=$'\t' read -r uuid name type device; do
             [ -n "$uuid" ] || continue
             case "$type" in
-                802-11-wireless|802-3-ethernet|vpn) ;;
+                wifi) type="802-11-wireless" ;;
+                ethernet) type="802-3-ethernet" ;;
+                vpn|wireguard) ;;
                 *) continue ;;
             esac
 
-            device="$(
-                printf '%s\n' "$active" |
-                    awk -F: -v uuid="$uuid" '$1 == uuid {print $2; exit}'
-            )"
             icon="$(icon_for_type "$type")"
 
-            if [ -n "$device" ]; then
+            if [ -n "$device" ] && [ "$device" != "--" ]; then
                 rank=0
                 status="  connected"
                 marker="●"
@@ -76,43 +94,50 @@ activate_connection() {
     local type output error
 
     type="$(nmcli -g connection.type connection show uuid "$uuid" 2>/dev/null)"
-    if [ "$type" = "vpn" ]; then
-        open_vpn_terminal "$uuid" "$name"
-        return 0
+    if [ "$type" = "vpn" ] || [ "$type" = "wireguard" ]; then
+        open_connection_terminal "$uuid" "$name"
+        return $?
     fi
 
-    output="$(nmcli connection up uuid "$uuid" 2>&1)"
-    if [ "$?" -eq 0 ]; then
+    if output="$(nmcli --wait 45 connection up uuid "$uuid" 2>&1)"; then
         notify "Connected: $name"
+        return 0
     else
         error="$(printf '%s\n' "$output" | tail -n1)"
         notify "Failed to connect: $name${error:+
 $error}"
+        if printf '%s\n' "$output" |
+            grep -qiE 'secret|password|agent|802\.1x|authentication'; then
+            open_connection_terminal "$uuid" "$name"
+            return $?
+        fi
+        return 1
     fi
 }
 
-open_vpn_terminal() {
+open_connection_terminal() {
     local uuid="$1"
     local name="$2"
 
     need_cmd foot
     foot \
         --app-id=network-vpn \
-        --title="VPN: $name" \
+        --title="Network: $name" \
         bash -c '
             printf "Connecting to %s\n\n" "$2"
-            nmcli --ask --pretty connection up uuid "$1"
+            nmcli --ask --pretty --wait 90 connection up uuid "$1"
             status=$?
             printf "\n"
             if [ "$status" -eq 0 ]; then
-                printf "VPN connected successfully.\n"
+                printf "Connection activated successfully.\n"
             else
-                printf "VPN connection failed with status %s.\n" "$status"
+                printf "Connection failed with status %s.\n" "$status"
             fi
             printf "\nPress Enter to close..."
             read -r _
             exit "$status"
         ' bash "$uuid" "$name" >/dev/null 2>&1 &
+    return 0
 }
 
 deactivate_connection() {
@@ -121,8 +146,10 @@ deactivate_connection() {
 
     if nmcli connection down uuid "$uuid" >/dev/null 2>&1; then
         notify "Disconnected: $name"
+        return 0
     else
         notify "Failed to disconnect: $name"
+        return 1
     fi
 }
 
@@ -201,14 +228,22 @@ edit_dns() {
     )"
 
     if [ -n "$dns" ]; then
-        nmcli connection modify uuid "$uuid" \
-            ipv4.ignore-auto-dns yes ipv4.dns "$dns" >/dev/null 2>&1
+        if nmcli connection modify uuid "$uuid" \
+            ipv4.ignore-auto-dns yes ipv4.dns "$dns" >/dev/null 2>&1; then
+            notify "DNS updated: $name"
+        else
+            notify "Invalid DNS configuration"
+            return 1
+        fi
     else
-        nmcli connection modify uuid "$uuid" \
-            ipv4.ignore-auto-dns no ipv4.dns "" >/dev/null 2>&1
+        if nmcli connection modify uuid "$uuid" \
+            ipv4.ignore-auto-dns no ipv4.dns "" >/dev/null 2>&1; then
+            notify "DNS set to automatic: $name"
+        else
+            notify "Failed to reset DNS: $name"
+            return 1
+        fi
     fi
-
-    notify "DNS updated: $name"
 }
 
 connection_menu() {
@@ -255,38 +290,67 @@ wifi_enabled() {
 
 toggle_wifi() {
     if wifi_enabled; then
-        nmcli radio wifi off >/dev/null 2>&1
-        notify "Wi-Fi disabled"
+        if nmcli radio wifi off >/dev/null 2>&1; then
+            notify "Wi-Fi disabled"
+        else
+            notify "Failed to disable Wi-Fi"
+            return 1
+        fi
     else
-        nmcli radio wifi on >/dev/null 2>&1
-        notify "Wi-Fi enabled"
+        if nmcli radio wifi on >/dev/null 2>&1; then
+            notify "Wi-Fi enabled"
+        else
+            notify "Failed to enable Wi-Fi"
+            return 1
+        fi
     fi
 }
 
 scan_wifi() {
-    local saved
+    local saved uuid type
 
-    nmcli radio wifi on >/dev/null 2>&1
+    if ! nmcli radio wifi on >/dev/null 2>&1; then
+        notify "Failed to enable Wi-Fi"
+        return 1
+    fi
     notify "Scanning for Wi-Fi networks"
     nmcli device wifi rescan >/dev/null 2>&1 || true
     saved="$(
-        nmcli -t -f NAME,TYPE connection show 2>/dev/null |
-            awk -F: '$2 == "802-11-wireless" {print $1}'
+        nmcli -g UUID connection show 2>/dev/null |
+            while IFS= read -r uuid; do
+                type="$(nmcli -g connection.type connection show uuid "$uuid" 2>/dev/null)"
+                [ "$type" = "802-11-wireless" ] || continue
+                nmcli --escape no -g 802-11-wireless.ssid \
+                    connection show uuid "$uuid" 2>/dev/null
+            done
     )"
 
     SCANNED_WIFI_ROWS="$(
-        nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list --rescan yes 2>/dev/null |
-            awk -F: -v saved_list="$saved" '
+        nmcli --mode multiline --colors no \
+            -f SSID,SIGNAL,SECURITY device wifi list --rescan yes 2>/dev/null |
+            awk -v RS="" -v FS="\n" -v saved_list="$saved" '
                 BEGIN {
                     split(saved_list, saved_networks, "\n")
                     for (i in saved_networks) {
                         saved[saved_networks[i]] = 1
                     }
                 }
-                $2 != "" && !saved[$2] && !seen[$2]++ {
-                    security = ($4 == "") ? "open" : $4
+                {
+                    ssid = signal = security = ""
+                    for (i = 1; i <= NF; i++) {
+                        key = $i
+                        sub(/:.*/, "", key)
+                        value = $i
+                        sub(/^[^:]*:[[:space:]]*/, "", value)
+                        if (key == "SSID") ssid = value
+                        if (key == "SIGNAL") signal = value
+                        if (key == "SECURITY") security = value
+                    }
+                }
+                ssid != "" && !saved[ssid] && !seen[ssid]++ {
+                    security = (security == "") ? "open" : security
                     printf "%d\tnearby\t%s\t%s\t○  󰖩 %-30.30s  %s%%\n",
-                        $3, $2, security, $2, $3, security
+                        signal, ssid, security, ssid, signal, security
                 }
             ' |
             sort -t $'\t' -k1,1nr -k3,3f |
@@ -304,24 +368,29 @@ scan_wifi() {
 connect_nearby_wifi() {
     local ssid="$1"
     local security="$2"
-    local password
+    local password output error status
 
     if [ "$security" = "open" ]; then
-        nmcli device wifi connect "$ssid" >/dev/null 2>&1
+        output="$(nmcli --wait 45 device wifi connect "$ssid" 2>&1)"
+        status=$?
     else
         password="$(
             printf '' | rofi -dmenu -password -p "Password for $ssid"
         )"
         [ -n "$password" ] || return
-        nmcli device wifi connect "$ssid" password "$password" >/dev/null 2>&1
+        output="$(
+            nmcli --wait 45 device wifi connect "$ssid" password "$password" 2>&1
+        )"
+        status=$?
     fi
 
-    if nmcli -t -f ACTIVE,SSID device wifi 2>/dev/null |
-        grep -Fqx "yes:$ssid"; then
+    if [ "$status" -eq 0 ]; then
         notify "Connected: $ssid"
         return 10
     else
-        notify "Failed to connect: $ssid"
+        error="$(printf '%s\n' "$output" | tail -n1)"
+        notify "Failed to connect: $ssid${error:+
+$error}"
         return 1
     fi
 }
