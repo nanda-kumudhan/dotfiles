@@ -23,7 +23,7 @@ set $workspace_outputs $HOME/.config/sway/scripts/workspace-outputs
 set $layout_titles $HOME/.config/sway/scripts/layout-titles
 set $wallpaper $HOME/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
-set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=gruvbox-dark-gtk GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=gtk3 QT_STYLE_OVERRIDE=Kvantum QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24
+set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=Adwaita:dark GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=qt6ct QT_STYLE_OVERRIDE=Fusion QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=Adwaita XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -85,7 +85,7 @@ exec systemctl --user start sway-session.target
 exec sh -c 'export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"; test -S "$SSH_AUTH_SOCK" || ssh-agent -a "$SSH_AUTH_SOCK"; dbus-update-activation-environment --systemd SSH_AUTH_SOCK; systemctl --user import-environment SSH_AUTH_SOCK'
 
 # KeePassXC integration
-exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
+exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" QT_QPA_PLATFORMTHEME=qt5ct QT_STYLE_OVERRIDE=Fusion keepassxc
 
 # Notifications
 exec_always sh -c 'command -v mako >/dev/null || exit 0; pkill -x mako 2>/dev/null; mako'
@@ -103,7 +103,7 @@ output * bg $wallpaper fill
 exec_always sh -c 'command -v kanshi >/dev/null 2>&1 || exit 0; pkill -x kanshi 2>/dev/null; exec kanshi'
 
 # --- Input ---
-seat * xcursor_theme capitaine-cursors 24
+seat * xcursor_theme Adwaita 24
 input * xkb_layout gb
 
 input "type:touchpad" {
@@ -204,7 +204,7 @@ bindsym $mod+Shift+s exec systemctl suspend
 
 # App shortcuts
 bindsym $mod+b exec $bluetooth_menu
-bindsym $mod+k exec $gui_env keepassxc --minimized
+bindsym $mod+k exec $gui_env env QT_QPA_PLATFORMTHEME=qt5ct QT_STYLE_OVERRIDE=Fusion keepassxc --minimized
 bindsym $mod+n exec $network_menu
 bindsym $mod+w exec $gui_env librewolf
 bindsym $mod+x exec $gui_env vscodium

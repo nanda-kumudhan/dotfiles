@@ -1,7 +1,9 @@
 7zip
 android-tools
 anki
+antimicrox
 antlr4
+apparmor
 arduino-cli
 autotiling
 base
@@ -80,6 +82,8 @@ polkit-gnome
 powertop
 prismlauncher
 qemu-desktop
+qt5ct
+qt6ct
 reflector
 remmina
 rofi
