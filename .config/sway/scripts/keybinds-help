@@ -177,7 +177,7 @@ run_action() {
         power) "$HOME/.config/rofi/power" ;;
         reload) run_sway reload ;;
         bluetooth) "$HOME/.config/rofi/bluetooth" ;;
-        keepassxc) "$HOME/.config/sway/scripts/gui-env" env QT_QPA_PLATFORMTHEME=qt5ct QT_STYLE_OVERRIDE=Fusion keepassxc --minimized ;;
+        keepassxc) "$HOME/.config/sway/scripts/gui-env" keepassxc --minimized ;;
         network) "$HOME/.config/rofi/network" ;;
         display-menu) "$HOME/.config/rofi/displays" ;;
         wdisplays) "$HOME/.config/sway/scripts/gui-env" wdisplays ;;

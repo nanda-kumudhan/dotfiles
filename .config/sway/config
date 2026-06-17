@@ -23,7 +23,6 @@ set $workspace_outputs $HOME/.config/sway/scripts/workspace-outputs
 set $layout_titles $HOME/.config/sway/scripts/layout-titles
 set $wallpaper $HOME/Pictures/wallpaper
 set $session_env WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GTK_THEME GTK_ICON_THEME GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE QT_WAYLAND_DISABLE_WINDOWDECORATION XCURSOR_THEME XCURSOR_SIZE
-set $theme_assign XDG_CURRENT_DESKTOP=sway XDG_SESSION_TYPE=wayland GTK_THEME=Adwaita:dark GTK_ICON_THEME=Papirus-Dark GDK_BACKEND=wayland,x11 QT_QPA_PLATFORM='wayland;xcb' QT_QPA_PLATFORMTHEME=qt6ct QT_STYLE_OVERRIDE=Fusion QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_THEME=Adwaita XCURSOR_SIZE=24
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -76,16 +75,15 @@ exec udiskie --no-tray --notify
 exec $gui_env $HOME/.local/bin/start-polkit-agent
 
 # Export the Wayland session to DBus/systemd.
-exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY $theme_assign
-exec systemctl --user import-environment WAYLAND_DISPLAY
-exec systemctl --user set-environment $theme_assign
+exec $gui_env dbus-update-activation-environment --systemd $session_env
+exec $gui_env systemctl --user import-environment $session_env
 exec systemctl --user start sway-session.target
 
 # Keep a stable SSH_AUTH_SOCK for KeePassXC.
 exec sh -c 'export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"; test -S "$SSH_AUTH_SOCK" || ssh-agent -a "$SSH_AUTH_SOCK"; dbus-update-activation-environment --systemd SSH_AUTH_SOCK; systemctl --user import-environment SSH_AUTH_SOCK'
 
 # KeePassXC integration
-exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" QT_QPA_PLATFORMTHEME=qt5ct QT_STYLE_OVERRIDE=Fusion keepassxc
+exec $gui_env env SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" keepassxc
 
 # Notifications
 exec_always sh -c 'command -v mako >/dev/null || exit 0; pkill -x mako 2>/dev/null; mako'
@@ -127,14 +125,14 @@ exec_always $caffeine start
 
 # Launchers
 
-bindsym Ctrl+Mod1+t exec $term
+bindsym Ctrl+Mod1+t exec $gui_env $term
 bindsym $mod+e exec $file_menu
 bindsym $mod+Shift+e exec $gui_env $file_manager
 bindsym $mod+space exec $launcher
 bindsym $mod+q kill
 bindsym $mod+l exec $lock
 bindsym $mod+Shift+l exec $caffeine toggle
-bindsym Ctrl+Escape exec $term -T "sysmon" -e htop
+bindsym Ctrl+Escape exec $gui_env $term -T "sysmon" -e htop
 bindsym Print exec $screenshot full
 bindsym Shift+Print exec $screenshot region
 bindsym Ctrl+Print exec $screenrecord full
@@ -204,11 +202,11 @@ bindsym $mod+Shift+s exec systemctl suspend
 
 # App shortcuts
 bindsym $mod+b exec $bluetooth_menu
-bindsym $mod+k exec $gui_env env QT_QPA_PLATFORMTHEME=qt5ct QT_STYLE_OVERRIDE=Fusion keepassxc --minimized
+bindsym $mod+k exec $gui_env keepassxc --minimized
 bindsym $mod+n exec $network_menu
 bindsym $mod+w exec $gui_env librewolf
 bindsym $mod+x exec $gui_env vscodium
-bindsym $mod+z exec $term -T "neovim" -e nvim
+bindsym $mod+z exec $gui_env $term -T "neovim" -e nvim
 
 # Scratchpad: hide/show any focused window
 bindsym $mod+Shift+grave move scratchpad
