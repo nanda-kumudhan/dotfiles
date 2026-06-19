@@ -69,6 +69,7 @@ nodejs
 noto-fonts
 noto-fonts-emoji
 npm
+nwg-look
 pacman-contrib
 papirus-icon-theme
 pavucontrol
@@ -82,7 +83,9 @@ polkit-gnome
 powertop
 prismlauncher
 qemu-desktop
+qt5-wayland
 qt5ct
+qt6-wayland
 qt6ct
 reflector
 remmina
