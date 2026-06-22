@@ -1,9 +1,0 @@
-android-studio
-arduino-ide-bin
-brave-origin-bin
-librewolf-bin
-localsend-bin
-papirus-folders
-paru
-vscodium-bin
-yay

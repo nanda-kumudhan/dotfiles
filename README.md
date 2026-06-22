@@ -1,38 +1,7 @@
 # Dotfiles
 
-My Arch Linux desktop configuration for Sway, Waybar, Rofi, Foot, Neovim,
+My Debian Stable desktop configuration for Sway, Waybar, Rofi, Foot, Neovim,
 Fastfetch, Starship, GTK, and Kvantum.
-
-## Quick Install
-
-Run this on Arch Linux:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash -s -- -y
-```
-
-The installer adds the required official and AUR packages, backs up replaced
-files to `~/.dotfiles-backup/`, and links the dotfiles into your home
-directory. Log out and back in when it finishes.
-
-To review each action before installing, omit `-y`:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nanda-kumudhan/dotfiles/main/bootstrap.sh | bash
-```
-
-Useful commands after cloning:
-
-```bash
-./install.sh --dry-run           # Preview changes
-./install.sh --files-only        # Install configuration only
-./install.sh --deps-only -y      # Install packages only
-./install.sh --copy              # Copy instead of symlink
-./install.sh --enable-services -y
-```
-
-> [!IMPORTANT]
-> This setup supports Arch Linux only and expects `pacman`.
 
 ## Keybindings
 
