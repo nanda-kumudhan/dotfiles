@@ -25,54 +25,29 @@
     "format-window-separator": " ",
     "window-rewrite-default": "󰋙",
     "window-rewrite": {
-      "class<discord>": "󰙯",
-      "class<Discord>": "󰙯",
-
-      "class<spotify>": "󰓇",
-      "class<Spotify>": "󰓇",
-
-      "class<dev.zed.Zed>": "󰅩",
-      "class<Zed>": "󰅩",
-
-      "class<brave-browser>": "󰇩",
-      "class<Brave-browser>": "󰇩",
-
-      "class<firefox>": "󰈹",
-
-      "class<torbrowser>": "󱅛",
-      "class<Tor Browser>": "󱅛",
-
-      "class<mullvad>": "󰖂",
-      "class<Mullvad VPN>": "󰖂",
-      "class<mullvad-vpn>": "󰖂",
-
-      "class<keepassxc>": "󰌾",
-      "class<KeePassXC>": "󰌾",
-
-      "class<libreoffice>": "󰈬",
-      "class<soffice>": "󰈬",
-      "class<libreoffice-writer>": "󰈬",
-      "class<libreoffice-calc>": "󰃢",
-      "class<libreoffice-impress>": "󰎐",
-
+      "class<brave-origin>": "󰊯",
+      "class<Brave-origin>": "󰊯",
       "class<thunar>": "󰉋",
       "class<Thunar>": "󰉋",
-
-      "class<mpv>": "󰕧",
-      "class<vlc>": "󰕧",
-
-      "class<foot>": "󰆍",
-      "class<kitty>": "󰆍",
-      "class<alacritty>": "󰆍",
-
-      "class<wdisplays>": "󰍺",
+      "class<librewolf>": "󰈹",
+      "class<LibreWolf>": "󰈹",
 
       "class<org.prismlauncher.PrismLauncher>": "󰍳",
       "class<Minecraft.*>": "󰍳",
-
-      "class<codium>": "󰨞",
-      "class<VSCodium>": "󰨞",
-      "class<code>": "󰨞",
+      "class<dev.zed.Zed>": "󰨞",
+      "class<brave-browser>": "󰇩",
+      "class<io.gitlab.librewolf-community>": "󰈹",
+      "class<torbrowser>": "󱅛",
+      "class<Tor Browser>": "󱅛",
+      "class<discord>": "󰙯",
+      "class<anki>": "󱎬",
+      "class<org.gnome.DiskUtility>": "󰋊",
+      "class<foot>": "󰆍",
+      "class<wdisplays>": "󰍺",
+      "class<io.podman_desktop.PodmanDesktop>": "󰡨",
+      "class<mpv>": "󰕧",
+      "class<imv>": "󰋩",
+      "class<com.stremio.stremio>": "󰿎",
     },
     "on-click": "activate",
     "sort-by-number": true,
@@ -117,7 +92,7 @@
   },
 
   "custom/launcher": {
-    "exec": "printf ' '",
+    "exec": "printf 󱄅",
     "format": "{}",
     "interval": "once",
     "tooltip": true,
