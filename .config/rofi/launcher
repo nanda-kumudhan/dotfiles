@@ -1,0 +1,2 @@
+#!/bin/sh
+exec rofi -show drun -theme ~/.config/rofi/launcher-grid.rasi 

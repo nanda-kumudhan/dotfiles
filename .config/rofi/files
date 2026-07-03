@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROFI="${ROFI:-rofi -dmenu -i -p Files}"
+START_DIR="${START_DIR:-$HOME}"
+
+need() {
+    command -v "$1" >/dev/null 2>&1 || {
+        echo "Missing dependency: $1" >&2
+        exit 1
+    }
+}
+
+need rofi
+need xdg-open
+
+menu() {
+    printf "%s\n" "$@" | $ROFI
+}
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "Files" "$1"
+}
+
+# -------------------------
+# File listing (safe)
+# -------------------------
+
+list_dir() {
+    local dir="$1"
+
+    {
+        echo ".. (up)"
+
+        # directories first
+        find "$dir" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort | while read -r d; do
+            echo "📁 $(basename "$d")"
+        done
+
+        # then files
+        find "$dir" -maxdepth 1 -mindepth 1 -type f 2>/dev/null | sort | while read -r f; do
+            echo "📄 $(basename "$f")"
+        done
+    }
+}
+
+# -------------------------
+# Resolve selection
+# -------------------------
+
+resolve_path() {
+    local dir="$1"
+    local choice="$2"
+
+    choice="${choice#📁 }"
+    choice="${choice#📄 }"
+
+    if [[ "$choice" == ".. (up)" ]]; then
+        dirname "$dir"
+        return
+    fi
+
+    echo "$dir/$choice"
+}
+
+is_dir() {
+    [[ -d "$1" ]]
+}
+
+# -------------------------
+# Main loop
+# -------------------------
+
+browse() {
+    local dir="$START_DIR"
+
+    while true; do
+        local choice path
+
+        choice="$(list_dir "$dir" | $ROFI -format s -p "$dir")"
+        [[ -z "$choice" ]] && exit 0
+
+        path="$(resolve_path "$dir" "$choice")"
+
+        if [[ "$choice" == ".. (up)" ]]; then
+            dir="$path"
+            continue
+        fi
+
+        if is_dir "$path"; then
+            dir="$path"
+        else
+            xdg-open "$path" >/dev/null 2>&1 &
+            notify "Opened $(basename "$path")"
+        fi
+    done
+}
+
+main() {
+    browse
+}
+
+main "$@"

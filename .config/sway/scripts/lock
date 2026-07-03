@@ -1,0 +1,43 @@
+#!/bin/sh
+
+config="${XDG_CONFIG_HOME:-$HOME/.config}/sway/config"
+fallback_wallpaper="$HOME/Pictures/wallpaper"
+wallpaper=$(
+    sed -n 's/^set[[:space:]]\+\$wallpaper[[:space:]]\+//p' "$config" 2>/dev/null |
+        sed "s/^[\"']//; s/[\"']$//" |
+        head -n 1
+)
+
+if [ ! -f "$wallpaper" ]; then
+    wallpaper="$fallback_wallpaper"
+fi
+
+set -- -f -c 000000
+
+if [ -f "$wallpaper" ]; then
+    set -- "$@" -i "$wallpaper" --scaling fill
+fi
+
+exec swaylock "$@" \
+    --font "JetBrainsMono Nerd Font" \
+    --font-size 13 \
+    --indicator-radius 84 \
+    --indicator-thickness 4 \
+    --inside-color 000000 \
+    --inside-clear-color 000000 \
+    --inside-ver-color 1a1a1a \
+    --inside-wrong-color 333333 \
+    --ring-color 666666 \
+    --ring-clear-color aaaaaa \
+    --ring-ver-color eeeeee \
+    --ring-wrong-color ffffff \
+    --line-color 000000 \
+    --separator-color 000000 \
+    --key-hl-color eeeeee \
+    --bs-hl-color aaaaaa \
+    --text-color eeeeee \
+    --text-clear-color aaaaaa \
+    --text-ver-color eeeeee \
+    --text-wrong-color ffffff \
+    --ignore-empty-password \
+    --show-failed-attempts

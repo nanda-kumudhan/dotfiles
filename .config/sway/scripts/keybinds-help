@@ -1,0 +1,233 @@
+#!/bin/sh
+
+theme="$HOME/.config/rofi/mono.rasi"
+tab=$(printf '\t')
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "Keyboard shortcuts" "$1"
+}
+
+require() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        notify "$1 is not installed"
+        exit 1
+    fi
+}
+
+entries() {
+    cat <<'EOF'
+LAUNCHERS
+Ctrl + Alt + T	Open terminal	terminal
+Super + E	Open file menu	file-menu
+Super + Shift + E	Open Thunar	thunar
+Super + Space	Open application launcher	launcher
+Ctrl + Escape	Open system monitor	system-monitor
+WINDOWS
+Super + Q	Close focused window	close-window
+Super + H	Split horizontally	split-horizontal
+Super + V	Split vertically	split-vertical
+Super + R	Toggle split layout	toggle-layout
+Super + F	Toggle fullscreen	fullscreen
+Super + D	Toggle floating	floating
+Super + Shift + D	Toggle sticky	sticky
+Super + C	Center floating window	center
+Super + T	Use tabbed layout	tabbed
+Super + S	Use stacking layout	stacking
+Super + Plus	Grow window width	grow
+Super + Minus	Shrink window width	shrink
+Super + Arrow	Focus window by direction	focus-direction
+Super + Shift + Arrow	Move window by direction	move-direction
+Super + A	Focus parent	focus-parent
+Super + Shift + A	Focus child	focus-child
+Alt + Tab	Next visible application	app-next
+Alt + Shift + Tab	Previous visible application	app-prev
+WORKSPACES
+Super + 1-9	Switch workspace	switch-workspace
+Super + Shift + 1-9	Move window to workspace	move-workspace
+Super + Ctrl + Arrow	Move workspace between displays	move-workspace-output
+Super + Tab	Next workspace	workspace-next
+Super + Shift + Tab	Previous workspace	workspace-prev
+Super + Shift + Grave	Move window to scratchpad	scratchpad-move
+Super + Grave	Show scratchpad	scratchpad-show
+SCREEN CAPTURE
+Print	Full screenshot and copy	screenshot-full
+Shift + Print	Region screenshot and copy	screenshot-region
+Ctrl + Print	Start or stop display recording	record-full
+Ctrl + Shift + Print	Start or stop region recording	record-region
+SESSION
+Super + L	Lock screen	lock
+Super + Shift + L	Show idle-inhibitor guidance	idle-guidance
+Super + Shift + S	Suspend immediately	sleep
+Ctrl + Alt + Delete	Open power menu	power
+Super + Shift + R	Reload Sway	reload
+APPLICATIONS
+Super + B	Open Bluetooth menu	bluetooth
+Super + K	Open KeePassXC	keepassxc
+Super + N	Open network menu	network
+Super + P	Open display menu	display-menu
+Super + Shift + P	Open Wdisplays	wdisplays
+Super + W	Open LibreWolf	librewolf
+Super + X	Open VSCodium	vscodium
+Super + Z	Open Neovim	neovim
+MEDIA AND HARDWARE
+Audio Mute	Toggle output mute	audio-mute
+Mic Mute	Toggle microphone mute	mic-mute
+Super + Audio Mute	Choose audio output	audio-output
+Super + Mic Mute	Choose audio input	audio-input
+Volume Up	Raise output volume	volume-up
+Volume Down	Lower output volume	volume-down
+Media Play	Toggle playback	media-play
+Media Previous	Previous track	media-prev
+Media Next	Next track	media-next
+Media Stop	Stop playback	media-stop
+Brightness Up	Raise display brightness	brightness-up
+Brightness Down	Lower display brightness	brightness-down
+Tools	Open volume control	volume-control
+Display	Open display menu	display-menu
+HELP
+Super + /	Show this shortcut list	help
+EOF
+}
+
+print_help() {
+    entries | awk -F '\t' '
+        $3 == "" {
+            if (seen++) print ""
+            print $1
+            next
+        }
+        { printf "%-28s%s\n", $1, $2 }
+    '
+}
+
+choose() {
+    prompt=$1
+    shift
+    printf '%s\n' "$@" |
+        rofi -dmenu -i -no-custom -p "$prompt" -theme "$theme"
+}
+
+choose_direction() {
+    choose "Direction" Left Down Up Right
+}
+
+choose_workspace() {
+    choose "Workspace" 1 2 3 4 5 6 7 8 9
+}
+
+run_sway() {
+    swaymsg "$@" >/dev/null
+}
+
+run_action() {
+    case "$1" in
+        terminal) foot ;;
+        file-menu) "$HOME/.config/rofi/files" ;;
+        thunar) "$HOME/.config/sway/scripts/gui-env" Thunar ;;
+        launcher) "$HOME/.config/rofi/launcher" ;;
+        system-monitor) foot -T sysmon -e htop ;;
+        close-window) run_sway kill ;;
+        split-horizontal) run_sway splith ;;
+        split-vertical) run_sway splitv ;;
+        toggle-layout) run_sway layout toggle split ;;
+        fullscreen) run_sway fullscreen toggle ;;
+        floating) run_sway floating toggle ;;
+        sticky) run_sway sticky toggle ;;
+        center) run_sway move position center ;;
+        tabbed) run_sway layout tabbed ;;
+        stacking) run_sway layout stacking ;;
+        grow) run_sway resize grow width 40 px ;;
+        shrink) run_sway resize shrink width 40 px ;;
+        focus-direction)
+            direction=$(choose_direction)
+            [ -n "$direction" ] && run_sway focus "$(printf '%s' "$direction" | tr '[:upper:]' '[:lower:]')"
+            ;;
+        move-direction)
+            direction=$(choose_direction)
+            [ -n "$direction" ] && run_sway move "$(printf '%s' "$direction" | tr '[:upper:]' '[:lower:]')"
+            ;;
+        focus-parent) run_sway focus parent ;;
+        focus-child) run_sway focus child ;;
+        app-next) "$HOME/.config/sway/scripts/cycle-app" next ;;
+        app-prev) "$HOME/.config/sway/scripts/cycle-app" prev ;;
+        switch-workspace)
+            workspace=$(choose_workspace)
+            [ -n "$workspace" ] && run_sway workspace number "$workspace"
+            ;;
+        move-workspace)
+            workspace=$(choose_workspace)
+            [ -n "$workspace" ] && run_sway move container to workspace number "$workspace"
+            ;;
+        move-workspace-output)
+            direction=$(choose "Display direction" Left Right)
+            [ -n "$direction" ] &&
+                run_sway move workspace to output "$(printf '%s' "$direction" | tr '[:upper:]' '[:lower:]')"
+            ;;
+        workspace-next) run_sway workspace next ;;
+        workspace-prev) run_sway workspace prev ;;
+        scratchpad-move) run_sway move scratchpad ;;
+        scratchpad-show) run_sway scratchpad show ;;
+        screenshot-full) "$HOME/.config/sway/scripts/screenshot" full ;;
+        screenshot-region) "$HOME/.config/sway/scripts/screenshot" region ;;
+        record-full) "$HOME/.config/sway/scripts/screenrecord" full ;;
+        record-region) "$HOME/.config/sway/scripts/screenrecord" region ;;
+        lock) "$HOME/.config/sway/scripts/lock" ;;
+        idle-guidance) "$HOME/.config/sway/scripts/caffeine" toggle ;;
+        sleep) systemctl suspend ;;
+        power) "$HOME/.config/rofi/power" ;;
+        reload) run_sway reload ;;
+        bluetooth) "$HOME/.config/rofi/bluetooth" ;;
+        keepassxc) "$HOME/.config/sway/scripts/gui-env" keepassxc --minimized ;;
+        network) "$HOME/.config/rofi/network" ;;
+        display-menu) "$HOME/.config/rofi/displays" ;;
+        wdisplays) "$HOME/.config/sway/scripts/gui-env" wdisplays ;;
+        librewolf) "$HOME/.config/sway/scripts/gui-env" librewolf ;;
+        vscodium) "$HOME/.config/sway/scripts/gui-env" vscodium ;;
+        neovim) foot -T neovim -e nvim ;;
+        audio-mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+        mic-mute) wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle ;;
+        audio-output) "$HOME/.config/rofi/pipewire-output" ;;
+        audio-input) "$HOME/.config/rofi/pipewire-input" ;;
+        volume-up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 1%+ ;;
+        volume-down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%- ;;
+        media-play) playerctl play-pause ;;
+        media-prev) playerctl previous ;;
+        media-next) playerctl next ;;
+        media-stop) playerctl stop ;;
+        brightness-up) brightnessctl set +3% ;;
+        brightness-down) brightnessctl set 3%- -n 0.3l% ;;
+        volume-control) "$HOME/.config/sway/scripts/gui-env" pavucontrol ;;
+        help) exec "$0" ;;
+        '') return 0 ;;
+        *)
+            notify "Unknown action: $1"
+            return 1
+            ;;
+    esac
+}
+
+if [ "${1:-}" = "--print" ]; then
+    print_help
+    exit 0
+fi
+
+require rofi
+require swaymsg
+
+selection=$(
+    entries |
+        rofi \
+            -dmenu \
+            -i \
+            -no-custom \
+            -format s \
+            -p "Shortcuts" \
+            -mesg "Select an entry to run it. Type to filter; Esc closes." \
+            -display-columns 1,2 \
+            -display-column-separator "$tab" \
+            -theme "$theme"
+) || exit 0
+
+action=$(printf '%s\n' "$selection" | awk -F '\t' '{ print $3 }')
+[ -n "$action" ] || exit 0
+run_action "$action"

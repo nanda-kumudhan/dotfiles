@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+choice="$(
+  wpctl status | awk '
+    /Sinks:/ { in_sinks=1; next }
+    /Sources:/ { in_sinks=0 }
+    in_sinks && /^[[:space:]│├─*]*[0-9]+\./ {
+      line=$0
+      gsub(/^[[:space:]│├─*]*/, "", line)
+      print line
+    }
+  ' | rofi -dmenu -i -p "Output"
+)"
+
+[[ -z "${choice:-}" ]] && exit 0
+
+id="$(awk '{print $1}' <<< "$choice" | tr -d '.')"
+
+wpctl set-default "$id"
+
+command -v notify-send >/dev/null 2>&1 && \
+  notify-send "PipeWire" "Output set to: $choice"

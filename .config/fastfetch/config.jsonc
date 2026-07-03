@@ -1,0 +1,172 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "builtin",
+    "padding": {
+      "top": 1,
+      "right": 2,
+    },
+  },
+  "display": {
+    "separator": "  󰇙  ",
+    "brightColor": false,
+    "key": {
+      "width": 14,
+    },
+    "bar": {
+      "char": {
+        "elapsed": "█",
+        "total": "░",
+      },
+      "width": 18,
+    },
+  },
+  "modules": [
+    "break",
+    {
+      "type": "title",
+      "key": " 󰀄  user",
+      "keyColor": "blue",
+    },
+    {
+      "type": "os",
+      "key": " 󰌽  distro",
+      "keyColor": "blue",
+    },
+    {
+      "type": "kernel",
+      "key": " 󰠩  kernel",
+      "format": "{release}",
+      "keyColor": "blue",
+    },
+    {
+      "type": "packages",
+      "key": " 󰏗  packages",
+      "combined": true,
+      "keyColor": "blue",
+    },
+    {
+      "type": "uptime",
+      "key": " 󰅐  uptime",
+      "keyColor": "blue",
+    },
+    {
+      "type": "shell",
+      "key": " 󰆍  shell",
+      "keyColor": "blue",
+    },
+
+    "break",
+
+    {
+      "type": "wm",
+      "key": " 󰧨  wm",
+      "keyColor": "green",
+    },
+    {
+      "type": "theme",
+      "key": " 󰔎  gtk",
+      "keyColor": "green",
+    },
+    {
+      "type": "icons",
+      "key": " 󰀻  icons",
+      "keyColor": "green",
+    },
+    {
+      "type": "cursor",
+      "key": " 󰇀  cursor",
+      "keyColor": "green",
+    },
+    {
+      "type": "terminal",
+      "key": " 󰆍  terminal",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "terminalfont",
+      "key": " 󰛖  term font",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "terminaltheme",
+      "key": " 󰏘  palette",
+      "keyColor": "yellow",
+    },
+
+    "break",
+
+    {
+      "type": "host",
+      "key": " 󰌢  host",
+      "keyColor": "red",
+    },
+    {
+      "type": "cpu",
+      "key": " 󰻠  cpu",
+      "format": "{name}",
+      "keyColor": "red",
+    },
+    {
+      "type": "gpu",
+      "key": " 󰍛  gpu",
+      "keyColor": "red",
+    },
+    {
+      "type": "display",
+      "key": " 󰍹  display",
+      "compactType": "original-with-refresh-rate",
+      "keyColor": "red",
+    },
+    {
+      "type": "memory",
+      "key": " 󰾆  memory",
+      "format": "{used} / {total} ({percentage})",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "swap",
+      "key": " 󰓡  swap",
+      "format": "{used} / {total} ({percentage})",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "disk",
+      "key": " 󰋊  disk",
+      "folders": "/",
+      "format": "{size-used} / {size-total} ({size-percentage})",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "battery",
+      "key": " 󰁹  battery",
+      "keyColor": "green",
+    },
+
+    "break",
+
+    {
+      "type": "datetime",
+      "key": " 󰃭  date",
+      "format": "{1}-{3}-{11} {14}:{17}",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "sound",
+      "key": " 󰕾  audio",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "player",
+      "key": " 󰥠  player",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "media",
+      "key": " 󰝚  media",
+      "keyColor": "magenta",
+    },
+
+    "break",
+  ],
+}

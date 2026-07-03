@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -eu
+
+apply_titles() {
+    swaymsg -t get_tree -r |
+        jq -r '
+            recurse(.nodes[]?, .floating_nodes[]?) as $parent
+            | $parent.nodes[]?
+            | select(.pid != null)
+            | [
+                .id,
+                (if .floating == "user_on" or .floating == "auto_on" then "F"
+                 elif $parent.layout == "tabbed" then "T"
+                 elif $parent.layout == "stacked" then "S"
+                 elif $parent.layout == "splitv" then "V"
+                 else "H"
+                 end)
+              ]
+            | @tsv
+        ' |
+        while IFS="$(printf '\t')" read -r id layout; do
+            swaymsg -q "[con_id=$id] title_format \"[$layout] %title\""
+        done
+}
+
+case "${1:-watch}" in
+    refresh)
+        apply_titles
+        ;;
+    watch)
+        apply_titles
+        swaymsg -t subscribe -m '["window"]' |
+            jq -r --unbuffered '.change' |
+            while IFS= read -r change; do
+                case "$change" in
+                    new|close|move|floating)
+                        sleep 0.05
+                        apply_titles
+                        ;;
+                esac
+            done
+        ;;
+    *)
+        printf 'usage: %s [watch|refresh]\n' "$0" >&2
+        exit 2
+        ;;
+esac

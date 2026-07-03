@@ -1,0 +1,256 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 24,
+  "spacing": 0,
+
+  "modules-left": ["custom/launcher", "sway/workspaces", "sway/scratchpad"],
+  "modules-center": ["mpris", "clock", "custom/pomodoro"],
+  "modules-right": [
+    "custom/vpn",
+    "network",
+    "bluetooth",
+    "custom/mic-muted",
+    "wireplumber",
+    "backlight",
+    "battery",
+    "idle_inhibitor",
+    "privacy",
+    "tray",
+    "custom/power",
+  ],
+
+  "sway/workspaces": {
+    "format": "{name} {windows}",
+    "format-window-separator": " ",
+    "window-rewrite-default": "󰋙",
+    "window-rewrite": {
+      "class<discord>": "󰙯",
+      "class<Discord>": "󰙯",
+
+      "class<spotify>": "󰓇",
+      "class<Spotify>": "󰓇",
+
+      "class<dev.zed.Zed>": "󰅩",
+      "class<Zed>": "󰅩",
+
+      "class<brave-browser>": "󰇩",
+      "class<Brave-browser>": "󰇩",
+
+      "class<firefox>": "󰈹",
+
+      "class<torbrowser>": "󱅛",
+      "class<Tor Browser>": "󱅛",
+
+      "class<mullvad>": "󰖂",
+      "class<Mullvad VPN>": "󰖂",
+      "class<mullvad-vpn>": "󰖂",
+
+      "class<keepassxc>": "󰌾",
+      "class<KeePassXC>": "󰌾",
+
+      "class<libreoffice>": "󰈬",
+      "class<soffice>": "󰈬",
+      "class<libreoffice-writer>": "󰈬",
+      "class<libreoffice-calc>": "󰃢",
+      "class<libreoffice-impress>": "󰎐",
+
+      "class<thunar>": "󰉋",
+      "class<Thunar>": "󰉋",
+
+      "class<mpv>": "󰕧",
+      "class<vlc>": "󰕧",
+
+      "class<foot>": "󰆍",
+      "class<kitty>": "󰆍",
+      "class<alacritty>": "󰆍",
+
+      "class<wdisplays>": "󰍺",
+
+      "class<org.prismlauncher.PrismLauncher>": "󰍳",
+      "class<Minecraft.*>": "󰍳",
+
+      "class<codium>": "󰨞",
+      "class<VSCodium>": "󰨞",
+      "class<code>": "󰨞",
+    },
+    "on-click": "activate",
+    "sort-by-number": true,
+    "all-outputs": false,
+  },
+
+  "sway/scratchpad": {
+    "format": "{icon}{count}",
+    "show-empty": false,
+    "format-icons": ["", ""],
+    "tooltip": true,
+    "tooltip-format": "{app}: {title}",
+  },
+
+  "mpris": {
+    "format": "{status_icon}",
+    "format-paused": "{status_icon}",
+    "format-stopped": "",
+    "dynamic-order": ["artist", "title"],
+    "dynamic-importance-order": ["title", "artist"],
+    "dynamic-separator": " - ",
+    "dynamic-len": 42,
+    "artist-len": 18,
+    "title-len": 28,
+    "tooltip-format": "{status_icon} {player} ({status})\nTitle: {title}\nArtist: {artist}\nAlbum: {album}\nLength: {length}",
+    "status-icons": {
+      "playing": "󰐊",
+      "paused": "󰏤",
+      "stopped": "󰓛",
+    },
+  },
+
+  "custom/pomodoro": {
+    "exec": "$HOME/.config/waybar/scripts/pomodoro",
+    "return-type": "json",
+    "interval": "once",
+    "signal": 8,
+    "tooltip": true,
+    "on-click": "$HOME/.config/waybar/scripts/pomodoro toggle",
+    "on-click-right": "$HOME/.config/waybar/scripts/pomodoro reset",
+    "on-click-middle": "$HOME/.config/waybar/scripts/pomodoro skip",
+  },
+
+  "custom/launcher": {
+    "exec": "printf ' '",
+    "format": "{}",
+    "interval": "once",
+    "tooltip": true,
+    "tooltip-format": "Launch apps",
+    "on-click": "$HOME/.config/rofi/launcher",
+  },
+
+  "custom/power": {
+    "exec": "printf '󰐥'",
+    "format": "{}",
+    "interval": "once",
+    "tooltip": true,
+    "tooltip-format": "Power menu",
+    "on-click": "$HOME/.config/rofi/power",
+  },
+
+  "tray": {
+    "icon-size": 14,
+    "spacing": 10,
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
+    "format-connected-battery": "󰂱",
+    "tooltip-format": "{controller_alias}\n{controller_address}\n{num_connections} connected",
+    "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
+    "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\nBattery: {device_battery_percentage}%",
+    "on-click": "$HOME/.config/rofi/bluetooth",
+  },
+
+  "network": {
+    "format-wifi": "{icon}",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰤭",
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "tooltip-format-wifi": "SSID: {essid}\nSignal: {signalStrength}% ({signaldBm}dBm)\nFrequency: {frequency}GHz\nBSSID: {bssid}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
+    "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
+    "tooltip-format-disconnected": "Disconnected",
+    "interval": 15,
+    "on-click": "$HOME/.config/rofi/network",
+  },
+
+  "custom/vpn": {
+    "exec": "$HOME/.config/waybar/scripts/vpn-status",
+    "return-type": "json",
+    "interval": 5,
+    "tooltip": true,
+  },
+
+  "battery": {
+    "interval": 60,
+    "states": {
+      "warning": 30,
+      "critical": 15,
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰚥 {capacity}%",
+    "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂁", "󰁹"],
+    "tooltip-format": "Capacity: {capacity}%\nPower draw: {power}W\nTime remaining: {time}",
+  },
+
+  "backlight": {
+    "format": "{icon} {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "scroll-step": 1,
+    "tooltip-format": "Brightness: {percent}%",
+  },
+
+  "wireplumber": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰖁 {volume}%",
+    "format-icons": ["󰕿", "󰖀", "󰕾"],
+    "max-volume": 100,
+    "scroll-step": 1,
+    "tooltip-format": "Volume: {volume}%\nNode: {node_name}",
+    "on-click": "$HOME/.config/rofi/pipewire-output",
+    "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "pavucontrol",
+  },
+
+  "custom/mic-muted": {
+    "exec": "wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED && printf '󰍭' || true",
+    "format": "{}",
+    "interval": 2,
+    "tooltip": true,
+    "tooltip-format": "Microphone muted",
+    "on-click": "$HOME/.config/rofi/pipewire-input",
+    "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-click-right": "pavucontrol",
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰛊",
+      "deactivated": "󰛉",
+    },
+    "tooltip-format-activated": "Idle inhibitor is on",
+    "tooltip-format-deactivated": "Idle inhibitor is off",
+  },
+
+  "privacy": {
+    "icon-spacing": 6,
+    "icon-size": 14,
+    "transition-duration": 0,
+    "modules": [
+      {
+        "type": "screenshare",
+        "tooltip": true,
+        "tooltip-icon-size": 18,
+      },
+      {
+        "type": "audio-in",
+        "tooltip": true,
+        "tooltip-icon-size": 18,
+      },
+    ],
+    "ignore-monitor": true,
+  },
+
+  "clock": {
+    "format": "{:%H:%M}",
+    "tooltip-format": "{:%A, %d %B %Y\n%H:%M}\n\n{calendar}",
+    "calendar": {
+      "mode": "month",
+      "on-scroll": 1,
+      "format": {
+        "today": "<span color='#e6e6e6'>{}</span>",
+      },
+    },
+  },
+}
