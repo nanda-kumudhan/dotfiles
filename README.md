@@ -1,7 +1,7 @@
 # Dotfiles
 
-My Nix OS desktop configuration for Sway, Waybar, Rofi, Foot, Neovim,
-Fastfetch, Starship, GTK, and Kvantum.
+My Nix OS desktop configuration for Sway, Waybar, Rofi, Foot,
+Fastfetch, Starship.
 
 ## Keybindings
 
@@ -57,8 +57,7 @@ searchable shortcut menu and run an action.
 | `Super + Shift + P` | Wdisplays |
 | `Super + K` | KeePassXC |
 | `Super + W` | LibreWolf |
-| `Super + X` | VSCodium |
-| `Super + Z` | Neovim |
+| `Super + Z` | Zed |
 
 ### Capture And Session
 
