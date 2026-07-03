@@ -4,80 +4,57 @@
 @define-color background #000000;
 
 * {
-    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
-    font-size: 15px;
-    font-weight: 400;
-    padding: 0;
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    text-shadow: none;
+  font-family:
+    "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
 }
 
-window#waybar {
-    color: @foreground;
-    background-color: @background;
-    border: none;
-    box-shadow: none;
+#waybar {
+  color: @foreground;
+  background-color: @background;
 }
 
 #workspaces {
-    padding: 0 0.3em;
+  padding-left: 0.45em;
 }
 
 #workspaces button {
-    color: @foreground-inactive;
-    background: @background;
-    background-image: none;
-    border-image: none;
-    box-shadow: none;
-    outline: none;
-    padding: 0 0.6em;
-    margin: 0 0.1em;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 0;
-    border-bottom: 2px solid transparent;
-    transition:
-        color 150ms ease,
-        background-color 150ms ease,
-        border-color 150ms ease;
+  color: @foreground;
+  background: @background;
+  padding: 0 0.45em;
+  margin: 0;
+  min-width: 2.1em;
+  min-height: 0;
+  transition: none;
 }
 
 #workspaces button label {
-    min-width: 0;
+  min-width: 2.1em;
+  transition: none;
 }
 
 #workspaces button.empty,
 #workspaces button.persistent {
-    color: @foreground-inactive;
-    background: @background;
-}
-
-#workspaces button:hover {
-    color: @foreground;
-    background: #111111;
-}
-
-#workspaces button:focus,
-#workspaces button:focus-visible {
-    outline: none;
-    box-shadow: none;
+  color: @foreground-inactive;
+  background: @background;
 }
 
 #workspaces button.focused,
 #workspaces button.active {
-    color: @foreground;
-    background: #1a1a1a;
-    background-image: none;
-    box-shadow: none;
-    border-bottom: 2px solid @foreground;
+  color: @foreground;
+  background: #1a1a1a;
 }
 
 #workspaces button.urgent {
-    color: @background;
-    background: @foreground;
+  color: @foreground;
+  background: #333333;
 }
 
 #scratchpad,
@@ -96,10 +73,10 @@ window#waybar {
 #privacy,
 #tray,
 #custom-power {
-    color: @foreground;
-    background: @background;
-    padding: 0 0.55em;
-    min-height: 0;
+  color: @foreground;
+  background: @background;
+  padding: 0 0.55em;
+  min-height: 0;
 }
 
 #mpris,
@@ -107,15 +84,15 @@ window#waybar {
 #privacy,
 #idle_inhibitor,
 #tray {
-    color: @foreground-inactive;
+  color: @foreground-inactive;
 }
 
 #mpris {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 #custom-pomodoro {
-    padding-right: 0;
+  padding-right: 0;
 }
 
 #mpris.paused,
@@ -124,7 +101,7 @@ window#waybar {
 #wireplumber.muted,
 #network.disconnected,
 #bluetooth.disabled {
-    color: @foreground-muted;
+  color: @foreground-muted;
 }
 
 #custom-pomodoro.work,
@@ -132,21 +109,21 @@ window#waybar {
 #idle_inhibitor.activated,
 #battery.warning,
 #battery.critical:not(.charging) {
-    color: @foreground;
+  color: @foreground;
 }
 
 #mpris.stopped {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 tooltip {
-    color: @foreground;
-    background: @background;
-    border: 1px solid @foreground-muted;
-    border-radius: 0;
+  color: @foreground;
+  background: @background;
+  border: 1px solid @foreground-muted;
+  border-radius: 0;
 }
 
 tooltip label {
-    color: @foreground;
-    padding: 0.45em;
+  color: @foreground;
+  padding: 0.45em;
 }
