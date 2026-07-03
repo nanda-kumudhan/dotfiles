@@ -1,0 +1,154 @@
+@define-color foreground #e6e6e6;
+@define-color foreground-inactive #aaaaaa;
+@define-color foreground-muted #666666;
+@define-color background #000000;
+@define-color background-alt #050505;
+@define-color background-hover #0a0a0a;
+@define-color background-selected #111111;
+@define-color border #2a2a2a;
+@define-color border-strong #4a4a4a;
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
+  font-size: 12px;
+  color: @foreground;
+  background-color: @background;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+  transition: none;
+  animation: none;
+}
+
+window,
+dialog,
+messagedialog,
+.background {
+  background-color: @background;
+  color: @foreground;
+}
+
+headerbar,
+menubar,
+toolbar,
+popover,
+menu,
+tooltip {
+  background-color: @background;
+  color: @foreground;
+  border: 1px solid @border;
+  border-radius: 0;
+}
+
+headerbar,
+menubar,
+toolbar {
+  box-shadow: none;
+}
+
+button,
+modelbutton,
+entry,
+textview,
+spinbutton,
+combobox,
+switch,
+check,
+radio,
+scale trough,
+scale slider,
+listview > row,
+treeview.view > row,
+notebook > header > tabs > tab {
+  background-color: @background-alt;
+  color: @foreground;
+  border: 1px solid @border;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+button:hover,
+modelbutton:hover,
+entry:hover,
+listview > row:hover,
+treeview.view > row:hover,
+notebook > header > tabs > tab:hover {
+  background-color: @background-hover;
+}
+
+button:active,
+modelbutton:active,
+listview > row:active,
+treeview.view > row:active,
+notebook > header > tabs > tab:active {
+  background-color: @background-selected;
+}
+
+button:disabled,
+modelbutton:disabled,
+entry:disabled,
+textview:disabled,
+switch:disabled,
+check:disabled,
+radio:disabled,
+scale:disabled {
+  color: @foreground-muted;
+  border-color: @border;
+}
+
+button:checked,
+switch:checked,
+check:checked,
+radio:checked,
+listview > row:selected,
+treeview.view > row:selected,
+notebook > header > tabs > tab:checked {
+  background-color: @background-selected;
+  border-color: @border-strong;
+  color: @foreground;
+}
+
+entry,
+textview,
+spinbutton,
+combobox,
+scale trough {
+  background-color: @background;
+  border-color: @border;
+}
+
+entry:focus,
+textview:focus,
+spinbutton:focus,
+combobox:focus,
+scale trough:focus,
+button:focus,
+modelbutton:focus {
+  border-color: @border-strong;
+}
+
+entry selection,
+textview text selection,
+label > selection {
+  background-color: @background-selected;
+  color: @foreground;
+}
+
+selection,
+textview > text > selection {
+  background-color: @background-selected;
+  color: @foreground;
+}
+
+scrollbar,
+separator {
+  background-color: @background;
+  color: @foreground-muted;
+}
+
+tooltip label,
+label.separator,
+.dim-label,
+label:disabled {
+  color: @foreground-muted;
+}
