@@ -25,29 +25,58 @@
     "format-window-separator": " ",
     "window-rewrite-default": "󰋙",
     "window-rewrite": {
-      "class<brave-origin>": "󰊯",
-      "class<Brave-origin>": "󰊯",
+      "class<firefox>": "󰈹",
+      "class<Firefox>": "󰈹",
+
+      "class<mullvadbrowser>": "󰖟",
+      "class<Mullvad Browser>": "󰖟",
+
+      "class<torbrowser>": "󱦄",
+      "class<Tor Browser>": "󱦄",
+
+      "class<discord>": "󰙯",
+      "class<Discord>": "󰙯",
+
+      "class<spotify>": "󰓇",
+      "class<Spotify>": "󰓇",
+
+      "class<mpv>": "󰕧",
+
+      "class<imv>": "󰋩",
+
+      "class<libreoffice>": "󰏆",
+      "class<soffice>": "󰏆",
+      "class<libreoffice-writer>": "󰏆",
+      "class<libreoffice-calc>": "󰓫",
+      "class<libreoffice-impress>": "󰎐",
+
+      "class<org.keepassxc.KeePassXC>": "󰌋",
+      "class<keepassxc>": "󰌋",
+
+      "class<dev.zed.Zed>": "󰨞",
+      "class<Zed>": "󰨞",
+
+      "class<codium>": "󰨞",
+      "class<VSCodium>": "󰨞",
+
+      "class<code-oss>": "󰨞",
+
+      "class<brave>": "󰇩",
+      "class<brave-browser>": "󰇩",
+
       "class<thunar>": "󰉋",
-      "class<Thunar>": "󰉋",
-      "class<librewolf>": "󰈹",
-      "class<LibreWolf>": "󰈹",
+
+      "class<foot>": "󰆍",
+      "class<kitty>": "󰆍",
+
+      "class<wdisplays>": "󰍺",
 
       "class<org.prismlauncher.PrismLauncher>": "󰍳",
       "class<Minecraft.*>": "󰍳",
-      "class<dev.zed.Zed>": "󰨞",
-      "class<brave-browser>": "󰇩",
-      "class<io.gitlab.librewolf-community>": "󰈹",
-      "class<torbrowser>": "󱅛",
-      "class<Tor Browser>": "󱅛",
-      "class<discord>": "󰙯",
-      "class<anki>": "󱎬",
-      "class<org.gnome.DiskUtility>": "󰋊",
-      "class<foot>": "󰆍",
-      "class<wdisplays>": "󰍺",
-      "class<io.podman_desktop.PodmanDesktop>": "󰡨",
-      "class<mpv>": "󰕧",
-      "class<imv>": "󰋩",
+
       "class<com.stremio.stremio>": "󰿎",
+
+      "class<qutebrowser>": "󰖟",
     },
     "on-click": "activate",
     "sort-by-number": true,
