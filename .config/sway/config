@@ -109,7 +109,9 @@ focus_follows_mouse no
 # Lock and power management
 exec swayidle -w \
     timeout 300 '$lock' \
-    before-sleep '$lock'
+    timeout 600 'systemctl suspend' \
+    before-sleep '$lock' \
+    after-resume 'swaymsg "output * power on"'
 
 # --- Keybinds ---
 
