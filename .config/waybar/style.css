@@ -2,59 +2,70 @@
 @define-color foreground-inactive #aaaaaa;
 @define-color foreground-muted #666666;
 @define-color background #000000;
+@define-color accent #89b4fa;
+@define-color urgent #f38ba8;
 
 * {
-  font-family:
-    "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
-  font-size: 15px;
-  font-weight: 400;
-  padding: 0;
-  margin: 0;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  text-shadow: none;
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
+    font-size: 15px;
+    font-weight: 400;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
 }
-
 #waybar {
-  color: @foreground;
-  background-color: @background;
+    color: @foreground;
+    background-color: @background;
 }
-
 #workspaces {
-  padding-left: 0.45em;
+    padding-left: 0.45em;
 }
-
 #workspaces button {
-  color: @foreground;
-  background: @background;
-  padding: 0 0.45em;
-  margin: 0;
-  min-width: 2.1em;
-  min-height: 0;
-  transition: none;
+    color: @foreground;
+    background: @background;
+    padding: 0 0.45em;
+    margin: 0;
+    min-width: 2.1em;
+    min-height: 0;
+    border-bottom: 2px solid transparent;
 }
-
 #workspaces button label {
-  min-width: 2.1em;
-  transition: none;
+    min-width: 2.1em;
+    transition: none;
 }
-
 #workspaces button.empty,
 #workspaces button.persistent {
-  color: @foreground-inactive;
-  background: @background;
+    color: @foreground-inactive;
+    background: @background;
 }
-
+#workspaces button:hover {
+    color: @foreground;
+    background: #1a1a1a;
+    border-bottom-color: @foreground-inactive;
+}
 #workspaces button.focused,
 #workspaces button.active {
-  color: @foreground;
-  background: #1a1a1a;
+    color: @foreground;
+    background: #1a1a1a;
+    border-bottom-color: @accent;
+}
+#workspaces button.urgent {
+    color: @background;
+    background: @urgent;
+    border-bottom-color: @urgent;
+    animation: urgent-pulse 1s ease-in-out infinite alternate;
 }
 
-#workspaces button.urgent {
-  color: @foreground;
-  background: #333333;
+@keyframes urgent-pulse {
+    from {
+        background: @urgent;
+    }
+    to {
+        background: #7a1f36;
+    }
 }
 
 #scratchpad,
@@ -73,57 +84,49 @@
 #privacy,
 #tray,
 #custom-power {
-  color: @foreground;
-  background: @background;
-  padding: 0 0.55em;
-  min-height: 0;
+    color: @foreground;
+    background: @background;
+    padding: 0 0.55em;
+    min-height: 0;
 }
-
 #mpris,
 #scratchpad,
 #privacy,
 #idle_inhibitor,
 #tray {
-  color: @foreground-inactive;
+    color: @foreground-inactive;
 }
-
 #mpris {
-  padding-left: 0;
+    padding-left: 0;
 }
-
 #custom-pomodoro {
-  padding-right: 0;
+    padding-right: 0;
 }
-
 #mpris.paused,
 #custom-pomodoro.idle,
 #custom-pomodoro.paused,
 #wireplumber.muted,
 #network.disconnected,
 #bluetooth.disabled {
-  color: @foreground-muted;
+    color: @foreground-muted;
 }
-
 #custom-pomodoro.work,
 #custom-pomodoro.break,
 #idle_inhibitor.activated,
 #battery.warning,
 #battery.critical:not(.charging) {
-  color: @foreground;
+    color: @foreground;
 }
-
 #mpris.stopped {
-  padding-left: 0;
+    padding-left: 0;
 }
-
 tooltip {
-  color: @foreground;
-  background: @background;
-  border: 1px solid @foreground-muted;
-  border-radius: 0;
+    color: @foreground;
+    background: @background;
+    border: 1px solid @foreground-muted;
+    border-radius: 0;
 }
-
 tooltip label {
-  color: @foreground;
-  padding: 0.45em;
+    color: @foreground;
+    padding: 0.45em;
 }
