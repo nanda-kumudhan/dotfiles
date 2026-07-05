@@ -196,7 +196,6 @@ bindsym $mod+Shift+s exec systemctl suspend
 bindsym $mod+b exec $bluetooth_menu
 bindsym $mod+k exec keepassxc --minimized
 bindsym $mod+n exec $network_menu
-bindsym $mod+w exec librewolf
 bindsym $mod+z exec $editor
 
 # Scratchpad: hide/show any focused window
@@ -229,11 +228,6 @@ bindswitch --reload --locked lid:on output eDP-1 disable
 bindswitch --reload --locked lid:off output eDP-1 enable
 
 # --- Window Rules ---
-
-# Keep fullscreen apps from idling the session
-for_window [class="mpv"] inhibit_idle fullscreen
-for_window [app_id="librewolf"] inhibit_idle fullscreen
-for_window [class="LibreWolf"] inhibit_idle fullscreen
 
 # Floating dialogs and utilities
 for_window [app_id="keepassxc"] floating enable, move position center
