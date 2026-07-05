@@ -58,7 +58,7 @@ exec_always swaymsg -q '[all] border normal 2'
 exec_always swaymsg -q gaps inner all set 3
 exec_always swaymsg -q gaps outer all set 2
 
-exec udiskie
+exec udiskie --smart-tray --automount
 
 client.focused $m_active $m_bg $m_text $m_active $m_active
 client.focused_inactive $m_inactive $m_bg #9a9a9a $m_inactive $m_inactive
