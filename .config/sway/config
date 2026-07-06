@@ -3,7 +3,7 @@ set $file_manager Thunar
 set $file_menu exec rofi -show filebrowser
 set $power_menu $HOME/.config/rofi/power
 set $display_menu $HOME/.config/rofi/displays
-set $editor zeditor
+set $editor zed
 
 exec dunst
 
