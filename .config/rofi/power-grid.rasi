@@ -1,0 +1,69 @@
+@theme "~/.config/rofi/mono.rasi"
+
+window {
+    width: 900px;
+    location: center;
+    anchor: center;
+}
+
+inputbar {
+    enabled: false;
+}
+
+listview {
+    columns: 6;
+    lines: 1;
+    flow: horizontal;
+    fixed-height: true;
+    spacing: 9px;
+}
+
+element {
+    orientation: vertical;
+    children: [ element-icon, element-text ];
+
+    height: 150px;
+    width: 150px;   /* important for stable grid squares */
+
+    padding: 0px;
+    spacing: 8px;
+
+    vertical-align: 0.5;   /* 👈 KEY FIX */
+    horizontal-align: 0.5;
+
+    background-color: transparent;
+    border: 1px;
+    border-color: transparent;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: transparent;
+    border-color: transparent;
+    text-color: @fg-muted;
+}
+
+element selected.normal,
+element selected.active {
+    border: 1px;
+    border-color: @border-strong;
+    background-color: @bg-selected;
+    text-color: @fg;
+}
+
+element-icon {
+    enabled: true;
+    size: 5em;   /* bigger icons */
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+}
+
+element-text {
+    font: "JetBrainsMono Nerd Font 14";
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+}
+
+message {
+    enabled: false;
+}
