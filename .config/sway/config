@@ -6,6 +6,7 @@ set $display_menu $HOME/.config/rofi/displays
 set $editor zed
 
 exec dunst
+exec kanshi
 
 # App launchers
 set $launcher exec rofi -show drun -theme ~/.config/rofi/launcher-grid.rasi
