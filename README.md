@@ -1,12 +1,16 @@
 # Dotfiles
 
-My Nix OS desktop configuration for Sway, Waybar, Rofi, Foot,
-Fastfetch, Starship.
+My Fedora Sway Spin desktop configuration for Sway, Waybar, Rofi, Foot, Fastfetch, Starship.
+
+This setup follows the default Fedora Sway Spin behavior with a **GTK Gruvbox monochrome theme** and uses **dunst for notifications**.
+
+---
 
 ## Keybindings
 
-`Super` is the Windows key. Press `Super + /` at any time to open the
-searchable shortcut menu and run an action.
+`Super` is the Windows key.
+
+---
 
 ### Launchers
 
@@ -17,6 +21,8 @@ searchable shortcut menu and run an action.
 | `Super + Shift + E` | Open Thunar |
 | `Super + Space` | Open application launcher |
 | `Ctrl + Escape` | Open system monitor |
+
+---
 
 ### Windows
 
@@ -36,6 +42,8 @@ searchable shortcut menu and run an action.
 | `Super + A` / `Super + Shift + A` | Focus parent / child |
 | `Alt + Tab` / `Alt + Shift + Tab` | Next / previous application |
 
+---
+
 ### Workspaces
 
 | Keys | Action |
@@ -47,29 +55,30 @@ searchable shortcut menu and run an action.
 | `Super + Shift + Grave` | Move window to scratchpad |
 | `Super + Grave` | Show scratchpad |
 
+---
+
 ### Apps And Menus
 
 | Keys | Action |
 | --- | --- |
-| `Super + B` | Bluetooth menu |
-| `Super + N` | Network menu |
+| `Super + B` | Blueman Manager |
 | `Super + P` | Display menu |
 | `Super + Shift + P` | Wdisplays |
 | `Super + K` | KeePassXC |
-| `Super + W` | LibreWolf |
-| `Super + Z` | Zed |
+| `Super + W` | Zed |
+
+---
 
 ### Capture And Session
 
 | Keys | Action |
 | --- | --- |
 | `Print` / `Shift + Print` | Full / region screenshot |
-| `Ctrl + Print` / `Ctrl + Shift + Print` | Full / region recording |
 | `Super + L` | Lock screen |
-| `Super + Shift + L` | Toggle idle-inhibitor guidance |
-| `Super + Shift + S` | Suspend |
 | `Super + Shift + R` | Reload Sway |
 | `Ctrl + Alt + Delete` | Power menu |
+
+---
 
 ### Media And Hardware
 
@@ -77,9 +86,23 @@ searchable shortcut menu and run an action.
 | --- | --- |
 | Volume and mute keys | Control output volume |
 | Mic mute key | Toggle microphone mute |
-| `Super + Audio Mute` | Choose audio output |
-| `Super + Mic Mute` | Choose audio input |
 | Media keys | Play, pause, stop, or change track |
 | Brightness keys | Change display brightness |
 | Tools key | Open volume control |
 | Display key | Open display menu |
+
+---
+
+## Notes
+
+- Notifications handled by **dunst**
+- No idle inhibitor toggle configured
+- No screen recording bindings
+- No audio input/output selection shortcuts
+- No network menu binding
+- Bluetooth managed via Blueman Manager
+- No LibreWolf shortcut
+- No searchable shortcut menu
+- Kanshi is not configured
+- Theme: GTK Gruvbox monochrome
+- Base: Fedora Sway Spin defaults
