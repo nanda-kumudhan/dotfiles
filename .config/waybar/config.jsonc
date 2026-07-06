@@ -4,21 +4,30 @@
   "height": 24,
   "spacing": 0,
 
-  "modules-left": ["custom/launcher", "sway/workspaces", "sway/scratchpad"],
-  "modules-center": ["mpris", "clock", "custom/pomodoro"],
+  "modules-left": ["sway/workspaces", "sway/scratchpad"],
+  "modules-center": ["clock"],
   "modules-right": [
-    "custom/vpn",
-    "network",
-    "bluetooth",
-    "custom/mic-muted",
+    "power-profiles-daemon",
+    "tray",
+    "mpris",
     "wireplumber",
     "backlight",
     "battery",
     "idle_inhibitor",
     "privacy",
-    "tray",
-    "custom/power",
   ],
+
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip": true,
+    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    "format-icons": {
+      "performance": "󰓅",
+      "balanced": "󰾅",
+      "power-saver": "󰾆",
+      "default": "",
+    },
+  },
 
   "sway/workspaces": {
     "format": "{name} {windows}",
@@ -132,69 +141,9 @@
     },
   },
 
-  "custom/pomodoro": {
-    "exec": "$HOME/.config/waybar/scripts/pomodoro",
-    "return-type": "json",
-    "interval": "once",
-    "signal": 8,
-    "tooltip": true,
-    "on-click": "$HOME/.config/waybar/scripts/pomodoro toggle",
-    "on-click-right": "$HOME/.config/waybar/scripts/pomodoro reset",
-    "on-click-middle": "$HOME/.config/waybar/scripts/pomodoro skip",
-  },
-
-  "custom/launcher": {
-    "exec": "printf 󱄅",
-    "format": "{}",
-    "interval": "once",
-    "tooltip": true,
-    "tooltip-format": "Launch apps",
-    "on-click": "$HOME/.config/rofi/launcher",
-  },
-
-  "custom/power": {
-    "exec": "printf '󰐥'",
-    "format": "{}",
-    "interval": "once",
-    "tooltip": true,
-    "tooltip-format": "Power menu",
-    "on-click": "$HOME/.config/rofi/power",
-  },
-
   "tray": {
     "icon-size": 14,
     "spacing": 10,
-  },
-
-  "bluetooth": {
-    "format": "󰂯",
-    "format-disabled": "󰂲",
-    "format-connected": "󰂱",
-    "format-connected-battery": "󰂱",
-    "tooltip-format": "{controller_alias}\n{controller_address}\n{num_connections} connected",
-    "tooltip-format-connected": "{controller_alias}\n{controller_address}\n\n{device_enumerate}",
-    "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
-    "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\nBattery: {device_battery_percentage}%",
-    "on-click": "$HOME/.config/rofi/bluetooth",
-  },
-
-  "network": {
-    "format-wifi": "{icon}",
-    "format-ethernet": "󰈀",
-    "format-disconnected": "󰤭",
-    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-    "tooltip-format-wifi": "SSID: {essid}\nSignal: {signalStrength}% ({signaldBm}dBm)\nFrequency: {frequency}GHz\nBSSID: {bssid}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
-    "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}\n↑ {bandwidthUpBytes} ↓ {bandwidthDownBytes}",
-    "tooltip-format-disconnected": "Disconnected",
-    "interval": 15,
-    "on-click": "$HOME/.config/rofi/network",
-  },
-
-  "custom/vpn": {
-    "exec": "$HOME/.config/waybar/scripts/vpn-status",
-    "return-type": "json",
-    "interval": 5,
-    "tooltip": true,
   },
 
   "battery": {
@@ -226,17 +175,6 @@
     "tooltip-format": "Volume: {volume}%\nNode: {node_name}",
     "on-click": "$HOME/.config/rofi/pipewire-output",
     "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-    "on-click-right": "pavucontrol",
-  },
-
-  "custom/mic-muted": {
-    "exec": "wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED && printf '󰍭' || true",
-    "format": "{}",
-    "interval": 2,
-    "tooltip": true,
-    "tooltip-format": "Microphone muted",
-    "on-click": "$HOME/.config/rofi/pipewire-input",
-    "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
     "on-click-right": "pavucontrol",
   },
 
