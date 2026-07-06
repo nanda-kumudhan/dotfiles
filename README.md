@@ -65,7 +65,7 @@ This setup follows the default Fedora Sway Spin behavior with a **GTK Gruvbox mo
 | `Super + P` | Display menu |
 | `Super + Shift + P` | Wdisplays |
 | `Super + K` | KeePassXC |
-| `Super + W` | Zed |
+| `Super + Z` | Zed |
 
 ---
 
