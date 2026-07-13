@@ -7,6 +7,7 @@ set $editor zed
 
 exec dunst
 exec kanshi
+exec autotiling
 
 # App launchers
 set $launcher exec rofi -show drun -theme ~/.config/rofi/launcher-grid.rasi
