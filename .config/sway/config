@@ -9,6 +9,10 @@ exec dunst
 exec kanshi
 exec autotiling
 
+exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11,secrets,ssh
+exec_always dbus-update-activation-environment --systemd WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP PATH
+exec systemctl --user import-environment SWAYSOCK WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP
+
 # App launchers
 set $launcher exec rofi -show drun -theme ~/.config/rofi/launcher-grid.rasi
 
@@ -67,7 +71,7 @@ exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY SWAYSOCK XDG_CU
 exec systemctl --user start sway-session.target
 
 # Wallpaper
-# output * bg '$HOME/Pictures/wallpaper' fill
+output * bg '$HOME/Pictures/wallpaper' fill
 
 # --- Input ---
 seat * xcursor_theme Adwaita 24
