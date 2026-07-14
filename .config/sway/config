@@ -96,9 +96,9 @@ exec blueman-applet
 # --- Idle & Power ---
 # Lock and power management
 exec swayidle -w \
-    timeout 300 'swaylock' \
+    timeout 300 'swaylock -f' \
     timeout 600 'systemctl suspend' \
-    before-sleep 'swaylock' \
+    before-sleep 'swaylock -f' \
     after-resume 'swaymsg "output * power on"'
 
 # --- Keybinds ---
