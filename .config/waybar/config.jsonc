@@ -7,7 +7,6 @@
   "modules-left": ["sway/workspaces", "sway/scratchpad"],
   "modules-center": ["clock"],
   "modules-right": [
-    "power-profiles-daemon",
     "tray",
     "mpris",
     "wireplumber",
@@ -17,97 +16,95 @@
     "privacy",
   ],
 
-  "power-profiles-daemon": {
-    "format": "{icon}",
-    "tooltip": true,
-    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
-    "format-icons": {
-      "performance": "󰓅",
-      "balanced": "󰾅",
-      "power-saver": "󰾆",
-      "default": "",
-    },
-  },
-
   "sway/workspaces": {
     "format": "{name} {windows}",
     "format-window-separator": " ",
     "window-rewrite-default": "󰋙",
     "window-rewrite": {
+      "app_id<firefox>": "󰈹",
+      "app_id<org.mozilla.firefox>": "󰈹",
+
+      "app_id<Brave-browser>": "󰖟",
+      "app_id<brave-browser>": "󰖟",
+
+      "app_id<org.keepassxc.KeePassXC>": "󰌋",
+
+      "app_id<org.gnome.Nautilus>": "󰉋",
+      "app_id<org.gnome.FileRoller>": "󰀼",
+
+      "app_id<org.gnome.Terminal>": "",
+      "app_id<org.gnome.Console>": "",
+
+
+      "app_id<org.remmina.Remmina>": "󰢹",
+      "app_id<dev.zed.Zed>": "󰅨",
+
+      "app_id<foot>": "",
+
+      "app_id<org.prismlauncher.PrismLauncher>": "󰍳",
+
+      "app_id<org.gnome.DiskUtility>": "󰋊",
+
+      "app_id<org.gnome.seahorse>": "󰌋",
+
+      "app_id<org.gnome.Loupe>": "󰋩",
+
+      "app_id<spotify>": "",
+
+      "app_id<org.localsend.localsend_app>": "󰇚",
+
+      "app_id<org.gnome.Software>": "󰏖",
+
       "class<firefox>": "󰈹",
       "class<Firefox>": "󰈹",
 
-      "class<mullvadbrowser>": "󰖟",
-      "class<Mullvad Browser>": "󰖟",
+      "class<Brave-browser>": "󰖟",
+      "class<brave-browser>": "󰖟",
 
-      "class<torbrowser>": "󱦄",
-      "class<Tor Browser>": "󱦄",
+      "class<Alacritty>": "",
+      "class<kitty>": "",
 
-      "class<discord>": "󰙯",
-      "class<Discord>": "󰙯",
+      "class<Zed>": "󰅨",
+      "class<zed>": "󰅨",
 
-      "class<spotify>": "󰓇",
-      "class<Spotify>": "󰓇",
+      "class<Code>": "󰨞",
+      "class<code>": "󰨞",
 
-      "class<mpv>": "󰕧",
+      "class<Anki>": "󰓫",
+      "class<anki>": "󰓫",
 
-      "class<imv>": "󰋩",
-
-      "class<libreoffice>": "󰏆",
       "class<soffice>": "󰏆",
-      "class<libreoffice-writer>": "󰏆",
-      "class<libreoffice-calc>": "󰓫",
-      "class<libreoffice-impress>": "󰎐",
+      "class<libreoffice>": "󰏆",
 
-      "class<org.keepassxc.KeePassXC>": "󰌋",
-      "class<keepassxc>": "󰌋",
+      "class<Texmaker>": "",
+      "class<texmaker>": "",
 
-      "class<dev.zed.Zed>": "󰨞",
-      "class<Zed>": "󰨞",
+      "class<Spotify>": "",
+      "class<spotify>": "",
 
-      "class<codium>": "󰨞",
-      "class<VSCodium>": "󰨞",
+      "class<transmission-gtk>": "󰐹",
+      "class<Transmission>": "󰐹",
 
-      "class<code-oss>": "󰨞",
+      "class<PrismLauncher>": "󰍳",
 
-      "class<brave>": "󰇩",
-      "class<brave-browser>": "󰇩",
+      "class<Remmina>": "󰢹",
 
-      "class<thunar>": "󰉋",
+      "class<jupyter>": "󰠅",
 
-      "class<foot>": "󰆍",
-      "class<kitty>": "󰆍",
+      "class<python>": "",
+      "class<Python>": "",
 
-      "class<wdisplays>": "󰍺",
+      "class<tor-browser>": "󰗽",
+      "class<Tor Browser>": "󰗽",
 
-      "class<org.prismlauncher.PrismLauncher>": "󰍳",
-      "class<Minecraft.*>": "󰍳",
+      "class<localsend>": "󰇚",
 
-      "class<com.stremio.stremio>": "󰿎",
+      "class<qemu>": "󰆧",
+      "class<virt-manager>": "󰆧",
 
-      "class<qutebrowser>": "󰖟",
+      "class<rpi-imager>": "󰐱",
 
-      "class<net.ankiweb.Anki>": "󰧑",
-      "class<Anki>": "󰧑",
-
-      "class<engrampa>": "󰗄",
-      "class<Engrampa>": "󰗄",
-      "class<file-roller>": "󰗄",
-
-      "class<jupyter-notebook>": "󰠮",
-      "class<jupyter-qtconsole>": "󰠮",
-
-      "class<texmaker>": "󰙩",
-      "class<Texmaker>": "󰙩",
-
-      "class<transmission-gtk>": "󰇚",
-      "class<com.transmissionbt.transmission>": "󰇚",
-
-      "class<remmina>": "󰢹",
-      "class<org.remmina.Remmina>": "󰢹",
-
-      "class<gnome-disks>": "󰋊",
-      "class<org.gnome.DiskUtility>": "󰋊",
+      "class<github-copilot>": "󰊤"
     },
 
     "on-click": "activate",
