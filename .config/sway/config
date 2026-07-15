@@ -1,8 +1,8 @@
 set $term foot
 set $file_manager Thunar
 set $file_menu exec rofi -show filebrowser
-set $power_menu $HOME/.config/rofi/power
-set $display_menu $HOME/.config/rofi/displays
+set $power_menu swaynag -t warning -m "Do you want to exit Sway?" \
+  -B "Logout" "swaymsg exit"
 set $editor zed
 
 exec dunst
@@ -14,7 +14,7 @@ exec_always dbus-update-activation-environment --systemd WAYLAND_DISPLAY SWAYSOC
 exec systemctl --user import-environment SWAYSOCK WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP
 
 # App launchers
-set $launcher exec rofi -show drun -theme ~/.config/rofi/launcher-grid.rasi
+set $launcher exec rofi -show drun -show-icons -icon-theme "Papirus" -drun-display-format "{name}" -p "Apps"
 
 # --- Workspaces ---
 set $ws1 "1"
@@ -71,7 +71,7 @@ exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY SWAYSOCK XDG_CU
 exec systemctl --user start sway-session.target
 
 # Wallpaper
-output * bg '$HOME/Pictures/wallpaper' fill
+exec swaybg -i '/home/nanda-kumudhan/Pictures/wallpaper'
 
 # --- Input ---
 seat * xcursor_theme Adwaita 24
@@ -125,7 +125,6 @@ bindsym Mod4+r layout toggle split, exec $layout_titles refresh
 bindsym Mod4+f fullscreen toggle
 bindsym Mod4+d floating toggle
 bindsym Mod4+Shift+d sticky toggle
-bindsym Mod4+p exec $display_menu
 bindsym Mod4+Shift+p exec wdisplays
 bindsym Mod4+c move position center
 bindsym Mod4+t layout tabbed, exec $layout_titles refresh
