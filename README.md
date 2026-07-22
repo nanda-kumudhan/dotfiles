@@ -1,6 +1,6 @@
 # Dotfiles
 
-My Fedora Sway Spin desktop configuration for Sway, Waybar, Rofi, Foot, Fastfetch, Starship.
+My Debian Stable development desktop configuration for Sway, Waybar, Rofi, Foot, Fastfetch, Starship.
 
 This setup follows the default Fedora Sway Spin behavior with a **GTK Gruvbox monochrome theme** and uses **dunst for notifications**.
 
